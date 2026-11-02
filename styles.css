@@ -1,0 +1,337 @@
+/* ==========================================================================
+   Store POS & Inventory Ledger - Brand Dashboard Stylesheet
+   Matching Cranky Panda Store #4: Flavour Infused Instant Coffee Powder
+   ========================================================================== */
+
+:root, [data-theme="cranky-dark"] {
+  /* 🐼 Default Brand Theme: Cranky Panda Dark & Emerald (from reference screenshot) */
+  --theme-name: 'cranky-dark';
+  --bg-primary: #0b0e14;
+  --bg-surface: #111622;
+  --bg-card: #151b28;
+  --bg-elevated: #1e2638;
+  --bg-input: #0f131c;
+  --border-subtle: #242d40;
+  --border-strong: #333f58;
+  --border-active: #10b981;
+  --accent-primary: #10b981;
+  --accent-hover: #059669;
+  --accent-secondary: #34d399;
+  --accent-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --accent-glow: rgba(16, 185, 129, 0.35);
+  --accent-soft: rgba(16, 185, 129, 0.15);
+  --accent-text: #a7f3d0;
+  
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-inverse: #0b0e14;
+  
+  --color-success: #10b981;
+  --color-success-soft: rgba(16, 185, 129, 0.15);
+  --color-warning: #f59e0b;
+  --color-warning-soft: rgba(245, 158, 11, 0.15);
+  --color-danger: #ef4444;
+  --color-danger-soft: rgba(239, 68, 68, 0.15);
+  --color-info: #38bdf8;
+  --color-info-soft: rgba(56, 189, 248, 0.15);
+
+  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 25px -5px var(--accent-glow);
+}
+
+/* 🍷 Theme 2: Cranky Roasted Burgundy & Warm Cream */
+[data-theme="cranky-burgundy"] {
+  --theme-name: 'cranky-burgundy';
+  --bg-primary: #12070a;
+  --bg-surface: #1e0c10;
+  --bg-card: #271016;
+  --bg-elevated: #36171e;
+  --bg-input: #1a0a0e;
+  --border-subtle: #4a1c25;
+  --border-strong: #692735;
+  --border-active: #f43f5e;
+  --accent-primary: #f43f5e;
+  --accent-hover: #e11d48;
+  --accent-secondary: #fda4af;
+  --accent-gradient: linear-gradient(135deg, #be123c 0%, #fb7185 100%);
+  --accent-glow: rgba(244, 63, 94, 0.35);
+  --accent-soft: rgba(244, 63, 94, 0.15);
+  --accent-text: #ffe4e6;
+  --text-primary: #fff1f2;
+  --text-secondary: #fecdd3;
+  --text-muted: #a87980;
+  --text-inverse: #12070a;
+}
+
+/* 🌌 Theme 3: Obsidian & Electric Violet */
+[data-theme="obsidian-violet"] {
+  --theme-name: 'obsidian-violet';
+  --bg-primary: #090a10;
+  --bg-surface: #10121d;
+  --bg-card: #151826;
+  --bg-elevated: #1d2134;
+  --bg-input: #121421;
+  --border-subtle: #242940;
+  --border-strong: #333a59;
+  --border-active: #8b5cf6;
+  --accent-primary: #8b5cf6;
+  --accent-hover: #7c3aed;
+  --accent-secondary: #c084fc;
+  --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #c084fc 100%);
+  --accent-glow: rgba(139, 92, 246, 0.35);
+  --accent-soft: rgba(139, 92, 246, 0.12);
+  --accent-text: #c4b5fd;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-inverse: #090a10;
+}
+
+/* ☀️ Theme 4: Nordic Clean Studio (Modern Light Theme) */
+[data-theme="nordic-light"] {
+  --theme-name: 'nordic-light';
+  --bg-primary: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-card: #ffffff;
+  --bg-elevated: #f1f5f9;
+  --bg-input: #f8fafc;
+  --border-subtle: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --border-active: #10b981;
+  --accent-primary: #10b981;
+  --accent-hover: #059669;
+  --accent-secondary: #34d399;
+  --accent-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --accent-glow: rgba(16, 185, 129, 0.25);
+  --accent-soft: rgba(16, 185, 129, 0.08);
+  --accent-text: #065f46;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --text-inverse: #ffffff;
+  --shadow-card: 0 4px 15px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -2px rgba(0, 0, 0, 0.03);
+}
+
+/* Base resets & typography */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  transition: background-color 0.25s ease, color 0.25s ease;
+  overflow-x: hidden;
+}
+
+code, .font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}
+
+/* Classes mapped to variables */
+.bg-theme-primary { background-color: var(--bg-primary); }
+.bg-theme-surface { background-color: var(--bg-surface); }
+.bg-theme-card { background-color: var(--bg-card); }
+.bg-theme-elevated { background-color: var(--bg-elevated); }
+.bg-theme-input { background-color: var(--bg-input); }
+.border-theme-subtle { border-color: var(--border-subtle); }
+.border-theme-strong { border-color: var(--border-strong); }
+.border-theme-active { border-color: var(--border-active); }
+.text-theme-primary { color: var(--text-primary); }
+.text-theme-secondary { color: var(--text-secondary); }
+.text-theme-muted { color: var(--text-muted); }
+.text-theme-accent { color: var(--accent-primary); }
+
+.glass-header {
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.theme-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.theme-card:hover {
+  border-color: var(--border-strong);
+}
+
+.theme-btn-primary {
+  background: var(--accent-gradient);
+  color: #0b0e14;
+  font-weight: 800;
+  box-shadow: 0 4px 15px -2px var(--accent-glow);
+  transition: transform 0.1s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.theme-btn-primary:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px -2px var(--accent-glow);
+}
+
+.theme-btn-primary:active {
+  transform: scale(0.98);
+}
+
+.theme-badge {
+  background-color: var(--accent-soft);
+  color: var(--accent-text);
+  border: 1px solid var(--border-active);
+  font-weight: 600;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-up {
+  animation: slideInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Modal Backdrop */
+.modal-overlay {
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Toast Notification System */
+#toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  max-width: 90vw;
+}
+
+.toast-pill {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-radius: 9999px;
+  background: rgba(17, 24, 39, 0.95);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(16, 185, 129, 0.2);
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: toastSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.toast-pill.toast-error {
+  border-color: rgba(239, 68, 68, 0.5);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(239, 68, 68, 0.2);
+}
+
+.toast-pill.fade-out {
+  opacity: 0;
+  transform: translateY(12px) scale(0.95);
+}
+
+@keyframes toastSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.receipt-paper {
+  font-family: var(--font-mono);
+  background: #ffffff;
+  color: #111827;
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  border-radius: 8px;
+  position: relative;
+}
+
+.receipt-divider {
+  border-top: 1px dashed #9ca3af;
+  margin: 12px 0;
+}
+
+.receipt-double-divider {
+  border-top: 2px dashed #4b5563;
+  margin: 12px 0;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-receipt, #printable-receipt * {
+    visibility: visible;
+  }
+  #printable-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm !important;
+    max-width: 80mm !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
