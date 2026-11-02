@@ -73,6 +73,7 @@ Because this project is a zero-build web app, you can drop the folder straight i
   * Customer details (Customer Name, Phone number, and bill reference).
   * **Cash Payment**: Live cash tendered input with automatic change-to-return calculation.
   * **Dynamic UPI QR Code**: Generates real-time UPI QR codes customized with your brand's UPI VPA and exact bill amount. Customers scan with Google Pay, PhonePe, Paytm, or BHIM.
+  * **⚡ Razorpay Online Checkout**: Instant popup modal accepting UPI Intent, Google Pay, PhonePe, Credit/Debit Cards, NetBanking, and Wallets with automatic live payment verification.
   * **Card / POS**: Reference input for external card machine auth slips.
   * **Instant Stock Deduction**: Inventory is immediately decremented upon booking.
 

@@ -25,7 +25,9 @@ const DEFAULT_BRANDS = [
     currencySymbol: "₹",
     logoIcon: "assets/logo.jpg",
     adminPin: "1234",
-    categories: ["General", "Merchandise"]
+    categories: ["General", "Merchandise"],
+    razorpayKeyId: "",
+    razorpayEnabled: true
   }
 ];
 
@@ -1044,63 +1046,147 @@ class StoreLedgerApp {
 
   setCheckoutPayment(method) {
     this.checkoutPaymentMethod = method;
-    const btns = ["cash", "upi", "card"];
+    const btns = ["cash", "upi", "razorpay", "card"];
     btns.forEach(m => {
       const btn = document.getElementById(`pay-btn-${m}`);
+      if (!btn) return;
       if (m === method) {
-        btn.className = "py-2 px-2.5 rounded-xl border text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 border-theme-active bg-[#e87a24]/15 text-[#fdf6e7]";
+        btn.className = "py-2 px-1.5 rounded-xl border text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 border-theme-active bg-[#e87a24]/15 text-[#fdf6e7]";
       } else {
-        btn.className = "py-2 px-2.5 rounded-xl border text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 border-theme-subtle bg-theme-surface text-theme-muted hover:text-theme-primary";
+        btn.className = "py-2 px-1.5 rounded-xl border text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 border-theme-subtle bg-theme-surface text-theme-muted hover:text-theme-primary";
       }
     });
 
-    document.getElementById("checkout-cash-fields").classList.toggle("hidden", method !== "cash");
-    document.getElementById("checkout-upi-fields").classList.toggle("hidden", method !== "upi");
-    document.getElementById("checkout-card-fields").classList.toggle("hidden", method !== "card");
+    const cashFields = document.getElementById("checkout-cash-fields");
+    const upiFields = document.getElementById("checkout-upi-fields");
+    const rzpFields = document.getElementById("checkout-razorpay-fields");
+    const cardFields = document.getElementById("checkout-card-fields");
+
+    if (cashFields) cashFields.classList.toggle("hidden", method !== "cash");
+    if (upiFields) upiFields.classList.toggle("hidden", method !== "upi");
+    if (rzpFields) rzpFields.classList.toggle("hidden", method !== "razorpay");
+    if (cardFields) cardFields.classList.toggle("hidden", method !== "card");
+
+    const total = this.cart.reduce((sum, i) => sum + i.quantity * i.soldPrice, 0);
 
     if (method === "upi") {
-      const total = this.cart.reduce((sum, i) => sum + i.quantity * i.soldPrice, 0);
       this.generateCheckoutUpiQr(total);
+    } else if (method === "razorpay") {
+      const brand = this.getActiveBrand();
+      const rzpBtnAmt = document.getElementById("rzp-btn-amount");
+      if (rzpBtnAmt) rzpBtnAmt.textContent = `₹${total}`;
+
+      const notice = document.getElementById("rzp-checkout-notice");
+      const modeBadge = document.getElementById("rzp-badge-mode");
+      const key = (brand.razorpayKeyId || "").trim();
+
+      if (key) {
+        const isLive = key.startsWith("rzp_live");
+        if (modeBadge) {
+          modeBadge.textContent = isLive ? "LIVE KEY" : "TEST KEY";
+          modeBadge.className = isLive 
+            ? "text-[9px] font-mono font-black uppercase px-2 py-0.5 rounded-md bg-[#e87a24] text-[#0c0a09]"
+            : "text-[9px] font-mono font-black uppercase px-2 py-0.5 rounded-md bg-[#e87a24]/20 text-[#fed7aa] border border-[#e87a24]/40";
+        }
+        if (notice) {
+          notice.innerHTML = `<span class="text-[#fed7aa] font-mono text-[11px]">✓ Key connected: <strong class="text-[#fdf6e7]">${key.slice(0, 10)}••••</strong></span>`;
+        }
+      } else {
+        if (modeBadge) {
+          modeBadge.textContent = "KEY NEEDED";
+          modeBadge.className = "text-[9px] font-mono font-black uppercase px-2 py-0.5 rounded-md bg-zinc-800 text-[#8d7d70] border border-[#2b2420]";
+        }
+        if (notice) {
+          notice.innerHTML = `
+            <div class="p-2 rounded-xl bg-[#e87a24]/10 border border-[#e87a24]/25 flex items-center justify-between text-xs gap-2">
+              <span class="text-[11px] text-[#fed7aa]">No Key ID entered yet</span>
+              <button type="button" onclick="app.openRazorpayQuickConfigModal()" class="px-2.5 py-1 rounded-lg bg-[#e87a24] text-[#0c0a09] font-black text-[10px] shrink-0 active:scale-95">
+                ⚡ Add Key
+              </button>
+            </div>
+          `;
+        }
+      }
     }
   }
 
-  calculateChange() {
-    const total = this.cart.reduce((sum, i) => sum + i.quantity * i.soldPrice, 0);
-    const tendered = parseFloat(document.getElementById("checkout-cash-tendered").value) || 0;
-    const change = Math.max(0, tendered - total);
-    document.getElementById("checkout-cash-change").textContent = `₹${change}`;
-  }
+  launchRazorpayCheckout() {
+    if (this.cart.length === 0) {
+      this.showToast("Your cart is empty!", "error");
+      return;
+    }
 
-  generateCheckoutUpiQr(amount) {
     const brand = this.getActiveBrand();
-    const qrContainer = document.getElementById("checkout-upi-qr-box");
-    document.getElementById("checkout-upi-vpa-label").textContent = brand.upiVpa || "brand@upi";
-    
-    qrContainer.innerHTML = "";
-    const upiUri = `upi://pay?pa=${encodeURIComponent(brand.upiVpa || 'store@upi')}&pn=${encodeURIComponent(brand.name)}&am=${amount}&cu=INR&tn=POSBill`;
+    const key = (brand.razorpayKeyId || "").trim();
 
-    if (window.QRCode) {
-      new QRCode(qrContainer, {
-        text: upiUri,
-        width: 128,
-        height: 128,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.M
+    if (!key) {
+      this.openRazorpayQuickConfigModal();
+      this.showToast("Please enter your Razorpay Key ID to charge payments", "error");
+      return;
+    }
+
+    if (typeof window.Razorpay === "undefined") {
+      this.showToast("Razorpay SDK is loading. Check your internet connection.", "error");
+      return;
+    }
+
+    const totalRevenue = this.cart.reduce((sum, i) => sum + i.quantity * i.soldPrice, 0);
+    const amountInPaise = Math.round(totalRevenue * 100);
+    const nextBillNumber = `BILL-${1000 + this.bills.length + 1}`;
+    const custName = document.getElementById("checkout-customer-name")?.value.trim() || "";
+    const custPhone = document.getElementById("checkout-customer-phone")?.value.trim() || "";
+
+    const options = {
+      key: key,
+      amount: amountInPaise,
+      currency: "INR",
+      name: brand.name || "Cranky Panda Coffee",
+      description: `POS Bill #${nextBillNumber} (${this.cart.length} items)`,
+      image: brand.logoIcon && (brand.logoIcon.includes("/") || brand.logoIcon.includes(".")) ? brand.logoIcon : "assets/logo.jpg",
+      handler: (response) => {
+        console.log("Razorpay payment success:", response);
+        const paymentId = response.razorpay_payment_id || `pay_${Date.now()}`;
+        this.finalizeBillPayment("razorpay", paymentId);
+      },
+      prefill: {
+        name: custName,
+        contact: custPhone
+      },
+      notes: {
+        bill_number: nextBillNumber,
+        booked_by: this.activeStaff
+      },
+      theme: {
+        color: "#e87a24"
+      },
+      modal: {
+        ondismiss: () => {
+          this.showToast("Razorpay payment modal closed", "info");
+        }
+      }
+    };
+
+    try {
+      const rzpInstance = new window.Razorpay(options);
+      rzpInstance.on("payment.failed", (response) => {
+        console.error("Razorpay payment failed:", response.error);
+        this.showToast(`Payment declined: ${response.error.description || 'Cancelled'}`, "error");
       });
-    } else {
-      qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=128x128&data=${encodeURIComponent(upiUri)}" alt="UPI QR" class="w-full h-full" />`;
+      rzpInstance.open();
+    } catch (err) {
+      console.error("Error opening Razorpay:", err);
+      this.showToast(`Razorpay error: ${err.message}`, "error");
     }
   }
 
-  submitBookBill() {
+  finalizeBillPayment(paymentMethod, paymentRef = "") {
     if (this.cart.length === 0) return;
 
     const brand = this.getActiveBrand();
-    const customerName = document.getElementById("checkout-customer-name").value.trim();
-    const customerPhone = document.getElementById("checkout-customer-phone").value.trim();
+    const customerName = document.getElementById("checkout-customer-name")?.value.trim() || "";
+    const customerPhone = document.getElementById("checkout-customer-phone")?.value.trim() || "";
     const cardRef = document.getElementById("checkout-card-ref")?.value.trim() || "";
-    
+
     const totalRevenue = this.cart.reduce((sum, i) => sum + i.quantity * i.soldPrice, 0);
     const totalCost = this.cart.reduce((sum, i) => sum + i.quantity * i.costPrice, 0);
     const totalQty = this.cart.reduce((sum, i) => sum + i.quantity, 0);
@@ -1118,6 +1204,8 @@ class StoreLedgerApp {
 
     // 2. Generate New Bill Record
     const nextBillNumber = `BILL-${1000 + this.bills.length + 1}`;
+    const ref = paymentRef || (paymentMethod === "card" ? cardRef : (paymentMethod === "upi" ? "UPI-AUTO-VERIFIED" : ""));
+
     const newBill = {
       id: "bill-" + Date.now(),
       billNumber: nextBillNumber,
@@ -1125,9 +1213,9 @@ class StoreLedgerApp {
       bookedBy: this.activeStaff,
       customerName,
       customerPhone,
-      paymentMethod: this.checkoutPaymentMethod,
-      paymentRef: this.checkoutPaymentMethod === "card" ? cardRef : (this.checkoutPaymentMethod === "upi" ? "UPI-AUTO-VERIFIED" : ""),
-      note: "",
+      paymentMethod: paymentMethod,
+      paymentRef: ref,
+      note: paymentMethod === "razorpay" ? "⚡ Razorpay Verified" : "",
       items: JSON.parse(JSON.stringify(this.cart)),
       totalQuantity: totalQty,
       totalRevenue,
@@ -1150,7 +1238,7 @@ class StoreLedgerApp {
 
     // 4. Feedback & Open Receipt
     this.playChime("success");
-    this.showToast(`Bill ${newBill.billNumber} booked for ₹${newBill.totalRevenue}! Stock updated.`);
+    this.showToast(`Bill ${newBill.billNumber} booked for ₹${newBill.totalRevenue}! Payment verified.`);
     this.renderPosCatalog();
     this.renderInventoryCards();
     this.renderLedgerList();
@@ -1158,6 +1246,18 @@ class StoreLedgerApp {
 
     // Show thermal receipt
     this.openReceiptModal(newBill);
+  }
+
+  submitBookBill() {
+    if (this.cart.length === 0) return;
+
+    if (this.checkoutPaymentMethod === "razorpay") {
+      this.launchRazorpayCheckout();
+      return;
+    }
+
+    const cardRef = document.getElementById("checkout-card-ref")?.value.trim() || "";
+    this.finalizeBillPayment(this.checkoutPaymentMethod, cardRef);
   }
 
   // --------------------------------------------------------------------------
@@ -1198,7 +1298,9 @@ class StoreLedgerApp {
 
     document.getElementById("rcpt-total-qty").textContent = bill.totalQuantity;
     document.getElementById("rcpt-grand-total").textContent = `₹${bill.totalRevenue}`;
-    document.getElementById("rcpt-payment-mode").textContent = bill.paymentMethod.toUpperCase();
+    document.getElementById("rcpt-payment-mode").textContent = bill.paymentMethod === "razorpay"
+      ? `RAZORPAY (${bill.paymentRef || 'VERIFIED'})`
+      : bill.paymentMethod.toUpperCase();
 
     document.getElementById("modal-receipt").classList.remove("hidden");
   }
@@ -1548,14 +1650,14 @@ class StoreLedgerApp {
     this.singleSellPaymentMethod = method;
     const btnCash = document.getElementById("single-pay-cash");
     const btnUpi = document.getElementById("single-pay-upi");
+    const btnRzp = document.getElementById("single-pay-razorpay");
 
-    if (method === "cash") {
-      if (btnCash) btnCash.className = "py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 border-[#e87a24]/50 bg-[#e87a24]/15 text-[#fed7aa] shadow-sm";
-      if (btnUpi) btnUpi.className = "py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 border-[#2b2420] bg-[#12100e] text-[#8d7d70] hover:text-[#fdf6e7]";
-    } else {
-      if (btnCash) btnCash.className = "py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 border-[#2b2420] bg-[#12100e] text-[#8d7d70] hover:text-[#fdf6e7]";
-      if (btnUpi) btnUpi.className = "py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 border-[#e87a24]/50 bg-[#e87a24]/15 text-[#fed7aa] shadow-sm";
-    }
+    const activeCls = "py-2.5 px-2 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 border-[#e87a24]/50 bg-[#e87a24]/15 text-[#fed7aa] shadow-sm";
+    const inactiveCls = "py-2.5 px-2 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 border-[#2b2420] bg-[#12100e] text-[#8d7d70] hover:text-[#fdf6e7]";
+
+    if (btnCash) btnCash.className = method === "cash" ? activeCls : inactiveCls;
+    if (btnUpi) btnUpi.className = method === "upi" ? activeCls : inactiveCls;
+    if (btnRzp) btnRzp.className = method === "razorpay" ? activeCls : inactiveCls;
   }
 
   recalculateSingleSell() {
@@ -1593,6 +1695,57 @@ class StoreLedgerApp {
       return;
     }
 
+    if (this.singleSellPaymentMethod === "razorpay") {
+      const brand = this.getActiveBrand();
+      const key = (brand.razorpayKeyId || "").trim();
+
+      if (!key) {
+        this.openRazorpayQuickConfigModal();
+        this.showToast("Please enter your Razorpay Key ID first", "error");
+        return;
+      }
+
+      if (typeof window.Razorpay === "undefined") {
+        this.showToast("Razorpay SDK is loading. Check internet connection.", "error");
+        return;
+      }
+
+      const totalRevenue = qty * price;
+      const options = {
+        key: key,
+        amount: Math.round(totalRevenue * 100),
+        currency: "INR",
+        name: brand.name || "Cranky Panda Coffee",
+        description: `${prod.name} (${qty} units)`,
+        image: brand.logoIcon && (brand.logoIcon.includes("/") || brand.logoIcon.includes(".")) ? brand.logoIcon : "assets/logo.jpg",
+        handler: (response) => {
+          this.executeSingleSellCommit(prod, qty, price, custName, custPhone, "razorpay", response.razorpay_payment_id);
+        },
+        prefill: {
+          name: custName,
+          contact: custPhone
+        },
+        theme: { color: "#e87a24" },
+        modal: {
+          ondismiss: () => {
+            this.showToast("Razorpay payment cancelled", "info");
+          }
+        }
+      };
+
+      try {
+        const rzpInstance = new window.Razorpay(options);
+        rzpInstance.open();
+      } catch (err) {
+        this.showToast(`Razorpay error: ${err.message}`, "error");
+      }
+      return;
+    }
+
+    this.executeSingleSellCommit(prod, qty, price, custName, custPhone, this.singleSellPaymentMethod, this.singleSellPaymentMethod === "upi" ? "UPI-DIRECT-SALE" : "");
+  }
+
+  executeSingleSellCommit(prod, qty, price, custName, custPhone, paymentMethod, paymentRef = "") {
     // 1. Deduct stock
     prod.stock = Math.max(0, prod.stock - qty);
     if (window.supabaseSync && window.supabaseSync.isConnected) {
@@ -1611,9 +1764,9 @@ class StoreLedgerApp {
       bookedBy: this.activeStaff,
       customerName: custName,
       customerPhone: custPhone,
-      paymentMethod: this.singleSellPaymentMethod,
-      paymentRef: this.singleSellPaymentMethod === "upi" ? "UPI-DIRECT-SALE" : "",
-      note: "Single Sell ⚡",
+      paymentMethod: paymentMethod,
+      paymentRef: paymentRef,
+      note: paymentMethod === "razorpay" ? "⚡ Razorpay Verified" : "Single Sell ⚡",
       items: [
         {
           id: prod.id,
@@ -2593,6 +2746,7 @@ class StoreLedgerApp {
       const methodBadge = {
         cash: 'bg-[#e87a24]/15 text-[#fed7aa] border-[#e87a24]/30',
         upi: 'bg-[#221c19] text-[#fdf6e7] border-[#443831]',
+        razorpay: 'bg-[#e87a24] text-[#0c0a09] font-black shadow-sm',
         card: 'bg-[#221c19] text-[#d6c5b0] border-[#443831]'
       }[bill.paymentMethod] || 'bg-zinc-800 text-zinc-300';
 
@@ -2603,8 +2757,9 @@ class StoreLedgerApp {
             <div class="flex items-center gap-2">
               <span class="font-mono font-black text-sm text-theme-primary">${bill.billNumber}</span>
               <span class="text-xs px-2 py-0.5 rounded-lg border font-bold uppercase text-[10px] ${methodBadge}">
-                ${bill.paymentMethod}
+                ${bill.paymentMethod === 'razorpay' ? '⚡ RAZORPAY' : bill.paymentMethod}
               </span>
+              ${bill.paymentRef ? `<span class="text-[10px] font-mono text-[#8d7d70] bg-black/40 px-1.5 py-0.5 rounded border border-[#2b2420]">${bill.paymentRef}</span>` : ''}
               <span class="text-[11px] text-theme-muted">by <strong>${bill.bookedBy}</strong></span>
               ${bill.customerName ? `<span class="text-[11px] text-theme-secondary font-semibold">• ${bill.customerName}</span>` : ''}
             </div>
@@ -2868,6 +3023,11 @@ class StoreLedgerApp {
     document.getElementById("cfg-brand-logo").value = brand.logoIcon || "✨";
     document.getElementById("cfg-categories-input").value = (brand.categories || []).join(", ");
 
+    const rzpInput = document.getElementById("cfg-rzp-key-id");
+    if (rzpInput) rzpInput.value = brand.razorpayKeyId || "";
+    const rzpToggle = document.getElementById("cfg-rzp-enabled");
+    if (rzpToggle) rzpToggle.checked = brand.razorpayEnabled !== false;
+
     const dropdown = document.getElementById("profile-dropdown");
     if (dropdown) dropdown.classList.add("hidden");
 
@@ -2888,6 +3048,11 @@ class StoreLedgerApp {
     brand.currency = document.getElementById("cfg-currency-symbol").value.trim();
     brand.adminPin = document.getElementById("cfg-admin-pin").value.trim() || "1234";
     brand.logoIcon = document.getElementById("cfg-brand-logo").value.trim() || "✨";
+
+    const rzpInput = document.getElementById("cfg-rzp-key-id");
+    if (rzpInput) brand.razorpayKeyId = rzpInput.value.trim();
+    const rzpToggle = document.getElementById("cfg-rzp-enabled");
+    if (rzpToggle) brand.razorpayEnabled = rzpToggle.checked;
     
     const catRaw = document.getElementById("cfg-categories-input").value.trim();
     if (catRaw) {
@@ -2900,7 +3065,43 @@ class StoreLedgerApp {
     this.renderInventoryTable();
     this.closeBrandSettingsModal();
     this.playChime("success");
-    alert("Brand settings updated successfully!");
+    this.showToast("Brand settings updated successfully!");
+  }
+
+  // --------------------------------------------------------------------------
+  // QUICK RAZORPAY CONFIGURATION MODAL
+  // --------------------------------------------------------------------------
+  openRazorpayQuickConfigModal() {
+    const brand = this.getActiveBrand();
+    const input = document.getElementById("quick-rzp-key-id");
+    if (input) input.value = brand.razorpayKeyId || "";
+    document.getElementById("modal-razorpay-config")?.classList.remove("hidden");
+  }
+
+  closeRazorpayConfigModal() {
+    document.getElementById("modal-razorpay-config")?.classList.add("hidden");
+  }
+
+  handleSaveRazorpayQuickConfig(e) {
+    e.preventDefault();
+    const brand = this.getActiveBrand();
+    const key = (document.getElementById("quick-rzp-key-id")?.value || "").trim();
+    brand.razorpayKeyId = key;
+    brand.razorpayEnabled = true;
+
+    const cfgInput = document.getElementById("cfg-rzp-key-id");
+    if (cfgInput) cfgInput.value = key;
+    const cfgToggle = document.getElementById("cfg-rzp-enabled");
+    if (cfgToggle) cfgToggle.checked = true;
+
+    this.saveState();
+    this.closeRazorpayConfigModal();
+    this.playChime("success");
+    this.showToast(`Razorpay Key connected: ${key.slice(0, 10)}••••`);
+
+    if (this.checkoutPaymentMethod === "razorpay") {
+      this.setCheckoutPayment("razorpay");
+    }
   }
 
   exportDatabaseBackup() {
