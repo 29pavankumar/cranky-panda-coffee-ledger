@@ -55,8 +55,8 @@ class SupabaseSyncService {
     if (badge) {
       if (connected) {
         badge.innerHTML = `
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="text-emerald-400 font-bold">Cloud Live</span>
+          <span class="w-2 h-2 rounded-full bg-[#e87a24] animate-pulse"></span>
+          <span class="text-[#e87a24] font-bold">Cloud Live</span>
         `;
         badge.title = "Connected to Supabase PostgreSQL (Realtime Active)";
       } else {

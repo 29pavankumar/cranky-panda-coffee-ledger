@@ -31,15 +31,13 @@ Your Supabase project is: **`https://ltaeuvjtnimrfxviadqc.supabase.co`**
 
 ---
 
-## 🎨 Theme System (Bespoke Palettes)
+## 🎨 Brand Design & Color Palette
 
-Instead of the fixed emerald-green aesthetic, this dashboard features **5 bespoke themes** that you can switch in 1 click from the header palette menu:
+Designed specifically around the **Cranky Panda Coffee pouch packaging**, using a strict **3-color palette**:
 
-1. **🌌 Obsidian & Electric Violet (Default)**: Deep graphite surface (`#090a10`), royal violet accents, neon badge glows, and luxury dark glassmorphism.
-2. **💎 Sapphire Cobalt**: Deep midnight navy surface (`#060b17`), electric blue highlights, precision tech-forward dashboard feel.
-3. **🏺 Artisan Terracotta**: Warm espresso charcoal (`#0c0a09`) with artisan terracotta and amber accents, designed for boutique apparel, leather goods, and craft goods.
-4. **🌿 Sage & Forest Gold**: Botanical slate with organic sage green (`#10b981`) and warm gold, ideal for sustainable or wellness brands.
-5. **☀️ Nordic Studio (Light Mode)**: Ultra-crisp, high-contrast daylight theme designed for outdoor pop-ups, flea markets, and daylight stalls.
+1. **Matte Espresso Black (`#0c0a09`)**: Pouch background, dark coffee card surfaces, and subtle warm borders.
+2. **Warm Butter Cream (`#fdf6e7`)**: Logo typography, panda mascot tones, headings, and clean high-contrast text.
+3. **Roasted Amber / Caramel Orange (`#e87a24`)**: Pouch roast label accent, primary action buttons, checkout CTA, cart stepper, and active status rings.
 
 ---
 

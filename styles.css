@@ -1,44 +1,49 @@
 /* ==========================================================================
    Store POS & Inventory Ledger - Brand Dashboard Stylesheet
-   Matching Cranky Panda Store #4: Flavour Infused Instant Coffee Powder
+   Cranky Panda Coffee: Flavour Infused Instant Coffee Powder
    ========================================================================== */
 
 :root, [data-theme="cranky-dark"] {
-  /* 🐼 Default Brand Theme: Cranky Panda Dark & Emerald (from reference screenshot) */
+  /* 🐼 Official Cranky Panda 3-Color Palette (Extracted directly from Coffee Pouches) */
   --theme-name: 'cranky-dark';
-  --bg-primary: #0b0e14;
-  --bg-surface: #111622;
-  --bg-card: #151b28;
-  --bg-elevated: #1e2638;
-  --bg-input: #0f131c;
-  --border-subtle: #242d40;
-  --border-strong: #333f58;
-  --border-active: #10b981;
-  --accent-primary: #10b981;
-  --accent-hover: #059669;
-  --accent-secondary: #34d399;
-  --accent-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  --accent-glow: rgba(16, 185, 129, 0.35);
-  --accent-soft: rgba(16, 185, 129, 0.15);
-  --accent-text: #a7f3d0;
+
+  /* COLOR 1: Deep Espresso Matte Black (Pouch background & rich dark surfaces) */
+  --bg-primary: #0c0a09;
+  --bg-surface: #14110f;
+  --bg-card: #181412;
+  --bg-elevated: #221c19;
+  --bg-input: #12100e;
+  --border-subtle: #2b2420;
+  --border-strong: #443831;
   
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --text-inverse: #0b0e14;
+  /* COLOR 2: Warm Butter Cream / Vanilla Latte (Pouch typography & brand text) */
+  --text-primary: #fdf6e7;
+  --text-secondary: #d6c5b0;
+  --text-muted: #8d7d70;
+  --text-inverse: #0c0a09;
+
+  /* COLOR 3: Roasted Amber / Warm Caramel Orange (Pouch roast accent, CTAs & highlights) */
+  --accent-primary: #e87a24;
+  --accent-hover: #d36916;
+  --accent-secondary: #fba758;
+  --accent-gradient: linear-gradient(135deg, #e87a24 0%, #d36916 100%);
+  --accent-glow: rgba(232, 122, 36, 0.35);
+  --accent-soft: rgba(232, 122, 36, 0.15);
+  --accent-text: #fed7aa;
+  --border-active: #e87a24;
   
-  --color-success: #10b981;
-  --color-success-soft: rgba(16, 185, 129, 0.15);
+  --color-success: #e87a24;
+  --color-success-soft: rgba(232, 122, 36, 0.15);
   --color-warning: #f59e0b;
   --color-warning-soft: rgba(245, 158, 11, 0.15);
   --color-danger: #ef4444;
   --color-danger-soft: rgba(239, 68, 68, 0.15);
-  --color-info: #38bdf8;
-  --color-info-soft: rgba(56, 189, 248, 0.15);
+  --color-info: #e87a24;
+  --color-info-soft: rgba(232, 122, 36, 0.15);
 
   --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-  --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.65), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
   --shadow-glow: 0 0 25px -5px var(--accent-glow);
 }
 
@@ -123,6 +128,11 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+::selection {
+  background: rgba(232, 122, 36, 0.35);
+  color: #fdf6e7;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--bg-primary);
@@ -187,7 +197,7 @@ code, .font-mono {
 
 .theme-btn-primary {
   background: var(--accent-gradient);
-  color: #0b0e14;
+  color: #0c0a09;
   font-weight: 800;
   box-shadow: 0 4px 15px -2px var(--accent-glow);
   transition: transform 0.1s ease, box-shadow 0.2s ease, opacity 0.2s ease;
@@ -206,8 +216,8 @@ code, .font-mono {
 .theme-badge {
   background-color: var(--accent-soft);
   color: var(--accent-text);
-  border: 1px solid var(--border-active);
-  font-weight: 600;
+  border: 1px solid rgba(232, 122, 36, 0.35);
+  font-weight: 700;
 }
 
 /* Animations */
@@ -256,10 +266,10 @@ code, .font-mono {
   gap: 10px;
   padding: 10px 18px;
   border-radius: 9999px;
-  background: rgba(17, 24, 39, 0.95);
-  border: 1px solid rgba(16, 185, 129, 0.4);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(16, 185, 129, 0.2);
-  color: #f8fafc;
+  background: rgba(20, 17, 15, 0.95);
+  border: 1px solid rgba(232, 122, 36, 0.4);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), 0 0 15px rgba(232, 122, 36, 0.25);
+  color: #fdf6e7;
   font-size: 13px;
   font-weight: 600;
   backdrop-filter: blur(8px);

@@ -37,7 +37,7 @@
   <!-- Custom Theme Stylesheet -->
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body class="antialiased selection:bg-purple-500/20 selection:text-purple-400">
+<body class="antialiased selection:bg-[#e87a24]/30 selection:text-[#fed7aa]">
   <div id="app" class="min-h-screen flex flex-col">
     <!-- Top Navigation Header -->
     <header class="glass-header sticky top-0 z-30 transition-colors">
@@ -47,8 +47,8 @@
           <!-- Left: Brand Selector -->
           <div class="relative flex items-center gap-3">
             <button id="brand-menu-btn" type="button" class="flex items-center gap-2.5 p-1 -m-1 rounded-2xl hover:bg-white/5 transition-all group text-left">
-              <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-rose-700 to-amber-500 p-[1px] shadow-lg shadow-rose-900/30 shrink-0 overflow-hidden">
-                <div class="h-full w-full rounded-[11px] bg-[#12070a] flex items-center justify-center overflow-hidden" id="brand-logo-container">
+              <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-[#e87a24] to-[#fdf6e7]/30 p-[1px] shadow-lg shadow-[#e87a24]/20 shrink-0 overflow-hidden">
+                <div class="h-full w-full rounded-[11px] bg-[#14110f] flex items-center justify-center overflow-hidden" id="brand-logo-container">
                   <img src="assets/logo.jpg" alt="Cranky Panda Coffee" class="w-full h-full object-cover" id="brand-logo-img" />
                 </div>
               </div>
@@ -57,9 +57,6 @@
                   <h1 id="header-brand-name" class="text-sm sm:text-base font-extrabold text-theme-primary truncate tracking-tight">
                     Cranky Panda
                   </h1>
-                  <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-purple-500/15 text-purple-300 border border-purple-500/30">
-                    Store #4
-                  </span>
                   <svg class="w-3.5 h-3.5 text-theme-muted group-hover:text-theme-primary transition-transform shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                   </svg>
@@ -116,11 +113,11 @@
             
             <!-- Supabase Cloud Sync Button -->
             <button id="cloud-sync-status-badge" onclick="app.syncWithSupabase(true)" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-theme-surface border border-theme-subtle text-xs hover:border-theme-strong text-theme-secondary hover:text-theme-primary transition-all active:scale-95" title="Supabase Cloud Sync Status (Click to Sync)">
-              <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <svg class="w-3.5 h-3.5 text-[#e87a24]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
               <span class="font-bold text-[11px] text-theme-primary" id="cloud-sync-text">Sync</span>
             </button>
 
-            <!-- Cart Trigger Button (Green Pill) -->
+            <!-- Cart Trigger Button (Amber Pill) -->
             <button id="btn-open-cart" onclick="app.openCartDrawer()" class="relative flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all active:scale-95 theme-btn-primary">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
               <span id="cart-item-count" class="font-mono">0</span>
@@ -130,7 +127,7 @@
             <!-- Staff Profile Badge -->
             <div class="relative">
               <button id="profile-menu-btn" type="button" class="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-theme-surface border border-theme-subtle hover:border-theme-strong transition-all">
-                <div class="w-6 h-6 rounded-full bg-emerald-500 text-black flex items-center justify-center text-xs font-black shrink-0" id="active-staff-initial">
+                <div class="w-6 h-6 rounded-full bg-[#e87a24] text-[#0c0a09] flex items-center justify-center text-xs font-black shrink-0" id="active-staff-initial">
                   P
                 </div>
                 <div class="hidden sm:block text-left text-[11px]">
@@ -170,7 +167,7 @@
 
                   <!-- Backup / Restore -->
                   <button onclick="app.exportDatabaseBackup()" class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-left hover:bg-white/5 transition-colors">
-                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    <svg class="w-4 h-4 text-[#e87a24]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                     <span>Export JSON Backup</span>
                   </button>
                 </div>
@@ -249,11 +246,11 @@
           <div class="theme-card p-4 sm:p-5 flex flex-col justify-between">
             <div class="flex items-center justify-between">
               <span class="text-[11px] font-bold uppercase tracking-wider text-theme-muted">TODAY'S SALES</span>
-              <div class="w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-xs">$</div>
+              <div class="w-7 h-7 rounded-lg bg-[#e87a24]/15 text-[#e87a24] border border-[#e87a24]/30 flex items-center justify-center font-bold text-xs">$</div>
             </div>
             <div class="my-2">
               <div id="inv-kpi-sales" class="text-2xl sm:text-3xl font-black font-mono text-theme-primary">₹0</div>
-              <div id="inv-kpi-sales-sub" class="text-xs text-emerald-400 font-medium mt-0.5">0 items • 0 bills</div>
+              <div id="inv-kpi-sales-sub" class="text-xs text-theme-secondary font-medium mt-0.5">0 items • 0 bills</div>
             </div>
           </div>
 
@@ -261,19 +258,19 @@
           <div class="theme-card p-4 sm:p-5 flex flex-col justify-between">
             <div class="flex items-center justify-between">
               <span class="text-[11px] font-bold uppercase tracking-wider text-theme-muted">TODAY'S PROFIT</span>
-              <div class="w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-xs">↗</div>
+              <div class="w-7 h-7 rounded-lg bg-[#e87a24]/15 text-[#e87a24] border border-[#e87a24]/30 flex items-center justify-center font-bold text-xs">↗</div>
             </div>
             <div class="my-2">
-              <div id="inv-kpi-profit" class="text-2xl sm:text-3xl font-black font-mono text-emerald-400">+₹0</div>
-              <div id="inv-kpi-profit-sub" class="text-xs text-emerald-400 font-medium mt-0.5">0% net margin</div>
+              <div id="inv-kpi-profit" class="text-2xl sm:text-3xl font-black font-mono text-[#fdf6e7]">+₹0</div>
+              <div id="inv-kpi-profit-sub" class="text-xs text-[#e87a24] font-medium mt-0.5">0% net margin</div>
             </div>
           </div>
 
           <!-- Card 3: Stall Stock (Per SKU) -->
           <div class="theme-card p-4 sm:p-5 flex flex-col justify-between">
             <div class="flex items-center justify-between">
-              <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-300">STALL STOCK (PER SKU)</span>
-              <div class="w-7 h-7 rounded-lg bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 flex items-center justify-center font-bold text-xs">📦</div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-theme-muted">STALL STOCK (PER SKU)</span>
+              <div class="w-7 h-7 rounded-lg bg-[#e87a24]/15 text-[#e87a24] border border-[#e87a24]/30 flex items-center justify-center font-bold text-xs">📦</div>
             </div>
             <div class="my-2">
               <div class="flex items-baseline gap-1.5">
@@ -282,7 +279,7 @@
               </div>
               <div class="flex items-center justify-between mt-0.5">
                 <span id="inv-kpi-units-status" class="text-xs text-theme-secondary font-medium">0 Total Units</span>
-                <button type="button" onclick="app.openSkuBreakdownModal()" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-0.5">View SKUs &rsaquo;</button>
+                <button type="button" onclick="app.openSkuBreakdownModal()" class="text-xs text-[#e87a24] hover:text-[#fba758] font-semibold flex items-center gap-0.5">View SKUs &rsaquo;</button>
               </div>
             </div>
           </div>
@@ -297,11 +294,11 @@
             </div>
             <div class="grid grid-cols-2 gap-2 mt-2 pt-1 border-t border-theme-subtle">
               <div>
-                <span class="text-[10px] uppercase font-bold text-amber-400/90 block">Cash:</span>
+                <span class="text-[10px] uppercase font-bold text-[#e87a24] block">Cash:</span>
                 <span id="inv-kpi-cash" class="text-base sm:text-lg font-black font-mono text-theme-primary">₹0</span>
               </div>
               <div>
-                <span class="text-[10px] uppercase font-bold text-sky-400/90 block">UPI:</span>
+                <span class="text-[10px] uppercase font-bold text-theme-secondary block">UPI:</span>
                 <span id="inv-kpi-upi" class="text-base sm:text-lg font-black font-mono text-theme-primary">₹0</span>
               </div>
             </div>
@@ -372,7 +369,7 @@
           </div>
           <div class="theme-card p-3 sm:p-4">
             <span class="text-[10px] font-bold uppercase tracking-wider text-theme-muted">Gross Revenue</span>
-            <div id="ledger-kpi-revenue" class="text-xl sm:text-2xl font-black font-mono text-emerald-400 mt-1">₹0</div>
+            <div id="ledger-kpi-revenue" class="text-xl sm:text-2xl font-black font-mono text-[#e87a24] mt-1">₹0</div>
           </div>
           <div class="theme-card p-3 sm:p-4">
             <span class="text-[10px] font-bold uppercase tracking-wider text-theme-muted">Items Sold</span>
@@ -455,7 +452,7 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
           <div class="theme-card p-4">
             <span class="text-[10px] font-bold uppercase tracking-wider text-theme-muted">Gross Sales Today</span>
-            <div id="close-today-revenue" class="text-2xl sm:text-3xl font-black font-mono text-emerald-400 mt-1">₹0</div>
+            <div id="close-today-revenue" class="text-2xl sm:text-3xl font-black font-mono text-[#e87a24] mt-1">₹0</div>
             <span id="close-today-bills-count" class="text-[11px] text-theme-muted mt-1 block">0 bills booked</span>
           </div>
 
@@ -497,7 +494,7 @@
 
             <div>
               <label class="block text-theme-muted text-[11px] font-semibold mb-1">Actual Physical Cash Counted (₹)</label>
-              <input id="drawer-counted-input" oninput="app.recalculateDrawer()" type="number" min="0" value="0" placeholder="Count notes in drawer" class="w-full px-3 py-2 rounded-xl bg-theme-input border border-theme-subtle text-emerald-400 font-bold font-mono focus:border-theme-active focus:outline-none" />
+              <input id="drawer-counted-input" oninput="app.recalculateDrawer()" type="number" min="0" value="0" placeholder="Count notes in drawer" class="w-full px-3 py-2 rounded-xl bg-theme-input border border-theme-subtle text-[#e87a24] font-bold font-mono focus:border-theme-active focus:outline-none" />
             </div>
           </div>
 
@@ -560,23 +557,23 @@
       </button>
     </nav>
 
-    <!-- Floating Bottom Checkout Bar (Sockadoodle-Exact as shown in Image 1) -->
+    <!-- Floating Bottom Checkout Bar (3-Color Cranky Panda Palette) -->
     <div id="floating-cart-bar" class="hidden fixed bottom-4 sm:bottom-6 left-3 right-3 sm:left-auto sm:right-6 sm:w-auto max-w-xl z-40 animate-slide-up">
-      <div class="p-3 sm:p-3.5 rounded-2xl bg-zinc-900 border border-emerald-500/40 shadow-2xl shadow-emerald-500/20 backdrop-blur-md flex items-center justify-between gap-4">
+      <div class="p-3 sm:p-3.5 rounded-2xl bg-[#181412] border border-[#e87a24]/40 shadow-2xl shadow-[#e87a24]/20 backdrop-blur-md flex items-center justify-between gap-4">
         <!-- Left: Cart Icon & Item Count & Total -->
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-lg">
-            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+          <div class="w-10 h-10 rounded-xl bg-[#e87a24]/15 text-[#e87a24] border border-[#e87a24]/30 flex items-center justify-center text-lg">
+            <svg class="w-5 h-5 text-[#e87a24]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
           </div>
           <div>
-            <span class="text-xs font-bold text-zinc-200 block"><span id="float-cart-count">1</span> <span id="float-cart-item-label">item in bill cart</span></span>
-            <span class="text-xs font-mono font-bold text-emerald-400">Total: <span id="float-cart-total">₹0</span></span>
+            <span class="text-xs font-bold text-theme-primary block"><span id="float-cart-count">1</span> <span id="float-cart-item-label">item in bill cart</span></span>
+            <span class="text-xs font-mono font-bold text-[#e87a24]">Total: <span id="float-cart-total">₹0</span></span>
           </div>
         </div>
 
         <!-- Right: GO FOR PAYMENT BUTTON -->
-        <button type="button" onclick="app.openCartDrawer()" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-zinc-950 font-black text-xs sm:text-sm transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/30 cursor-pointer">
-          <span id="float-cart-badge-number" class="w-5 h-5 rounded-full bg-zinc-950 text-emerald-400 flex items-center justify-center text-[11px] font-black">1</span>
+        <button type="button" onclick="app.openCartDrawer()" class="px-5 py-2.5 rounded-xl bg-[#e87a24] hover:bg-[#f28522] active:scale-95 text-[#0c0a09] font-black text-xs sm:text-sm transition-all flex items-center gap-2 shadow-lg shadow-[#e87a24]/30 cursor-pointer">
+          <span id="float-cart-badge-number" class="w-5 h-5 rounded-full bg-[#0c0a09] text-[#e87a24] flex items-center justify-center text-[11px] font-black">1</span>
           <span class="tracking-wide">GO FOR PAYMENT</span>
           <span id="float-cart-btn-total" class="font-mono font-black">₹0</span>
           <svg class="w-4 h-4 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
@@ -631,7 +628,7 @@
             <div>
               <label class="block text-[10px] font-bold uppercase tracking-wider text-theme-muted mb-1.5">Payment Method</label>
               <div class="grid grid-cols-3 gap-2">
-                <button type="button" onclick="app.setCheckoutPayment('cash')" id="pay-btn-cash" class="py-2 px-2.5 rounded-xl border text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 border-theme-active bg-purple-500/10 text-theme-accent">
+                <button type="button" onclick="app.setCheckoutPayment('cash')" id="pay-btn-cash" class="py-2 px-2.5 rounded-xl border text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 border-theme-active bg-[#e87a24]/15 text-[#fdf6e7]">
                   <span>💵 Cash</span>
                 </button>
                 <button type="button" onclick="app.setCheckoutPayment('upi')" id="pay-btn-upi" class="py-2 px-2.5 rounded-xl border text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 border-theme-subtle bg-theme-surface text-theme-muted hover:text-theme-primary">
@@ -815,7 +812,7 @@
         <div class="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-zinc-800 bg-zinc-950/70">
           <div>
             <h2 class="text-base sm:text-lg font-bold text-zinc-100 flex items-center gap-2">
-              <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+              <svg class="w-5 h-5 text-[#e87a24]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
               <span>Add New Stall Item / SKU</span>
             </h2>
             <p class="text-xs text-zinc-400">Set photo, category, cost basis, floor price & quoted sale price</p>
@@ -844,7 +841,7 @@
                 <img id="add-photo-img" src="" alt="Preview" class="w-full h-full object-cover" />
               </div>
               <div class="space-y-1">
-                <span class="text-xs font-bold text-emerald-400 flex items-center gap-1">✓ Photo attached</span>
+                <span class="text-xs font-bold text-[#e87a24] flex items-center gap-1">✓ Photo attached</span>
                 <div class="flex items-center gap-2">
                   <button type="button" onclick="document.getElementById('add-prod-file').click()" class="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[11px] font-semibold text-zinc-200">Change Photo</button>
                   <button type="button" onclick="app.removePhoto('add')" class="p-1 rounded-lg text-rose-400 hover:bg-rose-500/10" title="Remove photo">
@@ -855,8 +852,8 @@
             </div>
 
             <!-- Upload Dropzone when no photo -->
-            <div id="add-photo-dropzone" onclick="document.getElementById('add-prod-file').click()" class="cursor-pointer border-2 border-dashed border-zinc-800 hover:border-emerald-500/50 rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-center transition-all bg-zinc-900/40 hover:bg-zinc-900">
-              <div id="add-photo-spinner" class="hidden w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin"></div>
+            <div id="add-photo-dropzone" onclick="document.getElementById('add-prod-file').click()" class="cursor-pointer border-2 border-dashed border-zinc-800 hover:border-[#e87a24]/50 rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-center transition-all bg-zinc-900/40 hover:bg-zinc-900">
+              <div id="add-photo-spinner" class="hidden w-5 h-5 border-2 border-[#e87a24] border-t-transparent rounded-full animate-spin"></div>
               <div id="add-photo-icon" class="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-zinc-400">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3" stroke-width="2"/></svg>
               </div>
@@ -876,48 +873,48 @@
           </div>
 
           <!-- Subcategory / Flavour Pills (Coffee Flavours + Custom) -->
-          <div class="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/25">
-            <label class="block text-xs font-bold text-blue-300 uppercase tracking-wider mb-2 flex items-center justify-between">
+          <div class="p-3 rounded-2xl bg-[#e87a24]/10 border border-[#e87a24]/25">
+            <label class="block text-xs font-bold text-[#fed7aa] uppercase tracking-wider mb-2 flex items-center justify-between">
               <span>Subcategory / Flavour</span>
-              <span class="text-[10px] text-blue-400 font-semibold lowercase">variant filter tag</span>
+              <span class="text-[10px] text-[#fba758] font-semibold lowercase">variant filter tag</span>
             </label>
             <div id="add-flavour-pills" class="flex flex-wrap gap-2"></div>
-            <input type="text" id="add-custom-flavour-input" placeholder="Type custom flavour / variant..." oninput="app.setAddCustomFlavour(this.value)" class="hidden mt-2 w-full px-3 py-1.5 rounded-xl bg-zinc-950 border border-blue-500/40 text-xs text-zinc-100 focus:outline-none" />
+            <input type="text" id="add-custom-flavour-input" placeholder="Type custom flavour / variant..." oninput="app.setAddCustomFlavour(this.value)" class="hidden mt-2 w-full px-3 py-1.5 rounded-xl bg-zinc-950 border border-[#e87a24]/40 text-xs text-zinc-100 focus:outline-none" />
             <input type="hidden" id="add-prod-flavour" value="Belgium Chocolate" />
           </div>
 
           <!-- 🎁 Can be Given as Free Goodie? Toggle Switch -->
-          <div class="p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-between gap-3">
+          <div class="p-3.5 rounded-2xl bg-[#e87a24]/10 border border-[#e87a24]/20 flex items-center justify-between gap-3">
             <div>
-              <div class="flex items-center gap-1.5 text-xs font-bold text-purple-300">
+              <div class="flex items-center gap-1.5 text-xs font-bold text-[#fed7aa]">
                 <span>🎁 Can be Given as Free Goodie?</span>
               </div>
-              <p class="text-[11px] text-purple-300/70 mt-0.5">Allows cashiers to mark this item as ₹0 (Free Goodie / Giveaway) at checkout with one click.</p>
+              <p class="text-[11px] text-[#d6c5b0] mt-0.5">Allows cashiers to mark this item as ₹0 (Free Goodie / Giveaway) at checkout with one click.</p>
             </div>
             <label class="relative inline-flex items-center cursor-pointer shrink-0">
               <input type="checkbox" id="add-prod-can-be-free" class="sr-only peer" />
-              <div class="w-11 h-6 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
+              <div class="w-11 h-6 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#e87a24]"></div>
             </label>
           </div>
 
           <!-- Item Name -->
           <div>
             <label class="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1">Item Name *</label>
-            <input type="text" id="add-prod-name" required placeholder="e.g. Belgium Chocolate 50g" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 text-xs font-semibold placeholder-zinc-500 focus:outline-none focus:border-emerald-500" />
+            <input type="text" id="add-prod-name" required placeholder="e.g. Belgium Chocolate 50g" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 text-xs font-semibold placeholder-zinc-500 focus:outline-none focus:border-[#e87a24]" />
           </div>
 
           <!-- SKU / Barcode -->
           <div>
             <label class="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1">SKU / Barcode (Optional)</label>
             <div class="relative flex gap-2">
-              <input type="text" id="add-prod-sku" placeholder="e.g. CP-BC-50" class="w-full px-3.5 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 font-mono text-xs placeholder-zinc-500 focus:outline-none focus:border-emerald-500 uppercase" />
+              <input type="text" id="add-prod-sku" placeholder="e.g. CP-BC-50" class="w-full px-3.5 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 font-mono text-xs placeholder-zinc-500 focus:outline-none focus:border-[#e87a24] uppercase" />
               <button type="button" onclick="app.generateRandomSku('add')" class="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs whitespace-nowrap">⚡ Auto</button>
             </div>
           </div>
 
           <!-- 3-Tier Pricing Structure (Rupees ₹ Only) -->
           <div class="p-3.5 rounded-2xl bg-zinc-950/80 border border-zinc-800 space-y-3">
-            <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider block">3-Tier Pricing Structure (Rupees ₹ Only)</span>
+            <span class="text-[11px] font-bold text-[#e87a24] uppercase tracking-wider block">3-Tier Pricing Structure (Rupees ₹ Only)</span>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <!-- 1. Cost Basis -->
               <div>
@@ -927,7 +924,7 @@
                 </label>
                 <div class="relative">
                   <span class="absolute left-3 top-2.5 text-zinc-400 font-mono text-xs">₹</span>
-                  <input type="number" step="0.01" min="0" required id="add-prod-cost" placeholder="188" oninput="app.recalculateAddProfitPreview()" class="w-full pl-7 pr-3 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-zinc-100 font-mono text-sm focus:outline-none focus:border-emerald-500" />
+                  <input type="number" step="0.01" min="0" required id="add-prod-cost" placeholder="188" oninput="app.recalculateAddProfitPreview()" class="w-full pl-7 pr-3 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-zinc-100 font-mono text-sm focus:outline-none focus:border-[#e87a24]" />
                 </div>
               </div>
 
@@ -945,20 +942,20 @@
 
               <!-- 3. Quoted Price -->
               <div>
-                <label class="block text-[11px] font-semibold text-emerald-400 mb-1">
+                <label class="block text-[11px] font-semibold text-[#e87a24] mb-1">
                   3. Quoted Price (₹) *
                   <span class="text-[10px] text-zinc-500 block">Customer tag price</span>
                 </label>
                 <div class="relative">
-                  <span class="absolute left-3 top-2.5 text-emerald-400 font-mono text-xs">₹</span>
-                  <input type="number" step="0.01" min="0" required id="add-prod-quoted" placeholder="299" oninput="app.recalculateAddProfitPreview()" class="w-full pl-7 pr-3 py-2 rounded-xl bg-zinc-900 border border-emerald-500/40 text-emerald-300 font-mono text-sm focus:outline-none focus:border-emerald-400" />
+                  <span class="absolute left-3 top-2.5 text-[#e87a24] font-mono text-xs">₹</span>
+                  <input type="number" step="0.01" min="0" required id="add-prod-quoted" placeholder="299" oninput="app.recalculateAddProfitPreview()" class="w-full pl-7 pr-3 py-2 rounded-xl bg-zinc-900 border border-[#e87a24]/40 text-[#fed7aa] font-mono text-sm focus:outline-none focus:border-[#e87a24]" />
                 </div>
               </div>
             </div>
 
             <!-- Live Profit Preview Calculation Box -->
             <div id="add-profit-preview" class="p-2.5 rounded-xl bg-zinc-900 text-xs flex items-center justify-between">
-              <div id="add-sale-profit-label">Sale Profit: <strong class="text-emerald-400">+₹0 (0%)</strong></div>
+              <div id="add-sale-profit-label">Sale Profit: <strong class="text-[#e87a24]">+₹0 (0%)</strong></div>
               <div id="add-floor-profit-label">Floor Profit: <strong class="text-amber-400">+₹0 (0%)</strong></div>
             </div>
           </div>
@@ -966,20 +963,20 @@
           <!-- Initial Stock Count (Units) * -->
           <div>
             <label class="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1">Initial Stock Count (Units) *</label>
-            <input type="number" min="0" required id="add-prod-stock" value="0" placeholder="0" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 font-mono text-sm focus:outline-none focus:border-emerald-500" />
+            <input type="number" min="0" required id="add-prod-stock" value="0" placeholder="0" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 font-mono text-sm focus:outline-none focus:border-[#e87a24]" />
             <p class="text-[11px] text-zinc-500 mt-1">Starts at <strong>0</strong> by default. You can enter physical units now or update anytime via Edit.</p>
           </div>
 
           <!-- Item Notes -->
           <div>
             <label class="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1">Item Notes (Flavour profile, roast, weight)</label>
-            <textarea id="add-prod-notes" rows="2" placeholder="e.g. 100% Arabica, rich dark roast, 50g glass jar" class="w-full px-3.5 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 text-xs placeholder-zinc-500 focus:outline-none focus:border-emerald-500"></textarea>
+            <textarea id="add-prod-notes" rows="2" placeholder="e.g. 100% Arabica, rich dark roast, 50g glass jar" class="w-full px-3.5 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 text-xs placeholder-zinc-500 focus:outline-none focus:border-[#e87a24]"></textarea>
           </div>
 
           <!-- Form Buttons -->
           <div class="pt-2 border-t border-zinc-800 flex items-center justify-end gap-2.5">
             <button type="button" onclick="app.closeAddProductModal()" class="px-4 py-2.5 rounded-xl text-xs font-bold text-zinc-400 hover:text-zinc-200 transition-colors">Cancel</button>
-            <button type="submit" id="add-prod-submit-btn" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-zinc-950 font-bold text-xs shadow-lg shadow-emerald-500/20 transition-all">Save & Add to Stall</button>
+            <button type="submit" id="add-prod-submit-btn" class="px-5 py-2.5 rounded-xl bg-[#e87a24] hover:bg-[#f28522] active:scale-95 text-zinc-950 font-bold text-xs shadow-lg shadow-[#e87a24]/20 transition-all">Save & Add to Stall</button>
           </div>
         </form>
       </div>
@@ -996,7 +993,7 @@
         <div class="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-zinc-800 bg-zinc-950/70">
           <div>
             <h2 class="text-base sm:text-lg font-bold text-zinc-100 flex items-center gap-2">
-              <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              <svg class="w-5 h-5 text-[#e87a24]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
               <span>Edit SKU: <span id="edit-prod-title">Product</span></span>
             </h2>
             <p class="text-xs text-zinc-400">Updates create a clean immutable audit version in Supabase / LocalStore</p>
@@ -1026,7 +1023,7 @@
                 <img id="edit-photo-img" src="" alt="Preview" class="w-full h-full object-cover" />
               </div>
               <div class="space-y-1">
-                <span class="text-xs font-bold text-emerald-400 flex items-center gap-1">✓ Photo attached</span>
+                <span class="text-xs font-bold text-[#e87a24] flex items-center gap-1">✓ Photo attached</span>
                 <div class="flex items-center gap-2">
                   <button type="button" onclick="document.getElementById('edit-prod-file').click()" class="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[11px] font-semibold text-zinc-200">Change Photo</button>
                   <button type="button" onclick="app.removePhoto('edit')" class="p-1 rounded-lg text-rose-400 hover:bg-rose-500/10" title="Remove photo">
@@ -1036,7 +1033,7 @@
               </div>
             </div>
 
-            <div id="edit-photo-dropzone" onclick="document.getElementById('edit-prod-file').click()" class="cursor-pointer border-2 border-dashed border-zinc-800 hover:border-emerald-500/50 rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-center transition-all bg-zinc-900/40 hover:bg-zinc-900">
+            <div id="edit-photo-dropzone" onclick="document.getElementById('edit-prod-file').click()" class="cursor-pointer border-2 border-dashed border-zinc-800 hover:border-[#e87a24]/50 rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-center transition-all bg-zinc-900/40 hover:bg-zinc-900">
               <div id="edit-photo-icon" class="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-zinc-400">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3" stroke-width="2"/></svg>
               </div>
@@ -1056,27 +1053,27 @@
           </div>
 
           <!-- Subcategory / Flavour Pills -->
-          <div class="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/25">
-            <label class="block text-xs font-bold text-blue-300 uppercase tracking-wider mb-2 flex items-center justify-between">
+          <div class="p-3 rounded-2xl bg-[#e87a24]/10 border border-[#e87a24]/25">
+            <label class="block text-xs font-bold text-[#fed7aa] uppercase tracking-wider mb-2 flex items-center justify-between">
               <span>Subcategory / Flavour</span>
-              <span class="text-[10px] text-blue-400 font-semibold lowercase">variant filter tag</span>
+              <span class="text-[10px] text-[#fba758] font-semibold lowercase">variant filter tag</span>
             </label>
             <div id="edit-flavour-pills" class="flex flex-wrap gap-2"></div>
-            <input type="text" id="edit-custom-flavour-input" placeholder="Type custom flavour..." oninput="app.setEditCustomFlavour(this.value)" class="hidden mt-2 w-full px-3 py-1.5 rounded-xl bg-zinc-950 border border-blue-500/40 text-xs text-zinc-100 focus:outline-none" />
+            <input type="text" id="edit-custom-flavour-input" placeholder="Type custom flavour..." oninput="app.setEditCustomFlavour(this.value)" class="hidden mt-2 w-full px-3 py-1.5 rounded-xl bg-zinc-950 border border-[#e87a24]/40 text-xs text-zinc-100 focus:outline-none" />
             <input type="hidden" id="edit-prod-flavour" value="Belgium Chocolate" />
           </div>
 
           <!-- 🎁 Free Goodie Toggle -->
-          <div class="p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-between gap-3">
+          <div class="p-3.5 rounded-2xl bg-[#e87a24]/10 border border-[#e87a24]/20 flex items-center justify-between gap-3">
             <div>
-              <div class="flex items-center gap-1.5 text-xs font-bold text-purple-300">
+              <div class="flex items-center gap-1.5 text-xs font-bold text-[#fed7aa]">
                 <span>🎁 Can be Given as Free Goodie?</span>
               </div>
-              <p class="text-[11px] text-purple-300/70 mt-0.5">Allows cashiers to mark this item as ₹0 (Free Goodie / Giveaway) at checkout with one click.</p>
+              <p class="text-[11px] text-[#d6c5b0] mt-0.5">Allows cashiers to mark this item as ₹0 (Free Goodie / Giveaway) at checkout with one click.</p>
             </div>
             <label class="relative inline-flex items-center cursor-pointer shrink-0">
               <input type="checkbox" id="edit-prod-can-be-free" class="sr-only peer" />
-              <div class="w-11 h-6 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
+              <div class="w-11 h-6 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#e87a24]"></div>
             </label>
           </div>
 
@@ -1084,17 +1081,17 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1">Item Name *</label>
-              <input type="text" id="edit-prod-name" required placeholder="Product name" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 text-xs font-semibold focus:outline-none focus:border-emerald-500" />
+              <input type="text" id="edit-prod-name" required placeholder="Product name" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 text-xs font-semibold focus:outline-none focus:border-[#e87a24]" />
             </div>
             <div>
               <label class="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1">SKU / Barcode *</label>
-              <input type="text" id="edit-prod-sku" required placeholder="SKU code" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 font-mono text-xs uppercase focus:outline-none focus:border-emerald-500" />
+              <input type="text" id="edit-prod-sku" required placeholder="SKU code" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 font-mono text-xs uppercase focus:outline-none focus:border-[#e87a24]" />
             </div>
           </div>
 
           <!-- 3-Tier Prices -->
           <div class="p-3.5 rounded-2xl bg-zinc-950/80 border border-zinc-800 space-y-3">
-            <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider block">3-Tier Pricing Structure (Rupees ₹ Only)</span>
+            <span class="text-[11px] font-bold text-[#e87a24] uppercase tracking-wider block">3-Tier Pricing Structure (Rupees ₹ Only)</span>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label class="block text-[11px] font-semibold text-zinc-400 mb-1">
@@ -1103,7 +1100,7 @@
                 </label>
                 <div class="relative">
                   <span class="absolute left-3 top-2.5 text-zinc-400 font-mono text-xs">₹</span>
-                  <input type="number" step="0.01" min="0" required id="edit-prod-cost" oninput="app.recalculateEditProfitPreview()" class="w-full pl-7 pr-3 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-zinc-100 font-mono text-sm focus:outline-none focus:border-emerald-500" />
+                  <input type="number" step="0.01" min="0" required id="edit-prod-cost" oninput="app.recalculateEditProfitPreview()" class="w-full pl-7 pr-3 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-zinc-100 font-mono text-sm focus:outline-none focus:border-[#e87a24]" />
                 </div>
               </div>
 
@@ -1119,29 +1116,29 @@
               </div>
 
               <div>
-                <label class="block text-[11px] font-semibold text-emerald-400 mb-1">
+                <label class="block text-[11px] font-semibold text-[#e87a24] mb-1">
                   3. Quoted Price (₹) *
                   <span class="text-[10px] text-zinc-500 block">Customer tag price</span>
                 </label>
                 <div class="relative">
-                  <span class="absolute left-3 top-2.5 text-emerald-400 font-mono text-xs">₹</span>
-                  <input type="number" step="0.01" min="0" required id="edit-prod-quoted" oninput="app.recalculateEditProfitPreview()" class="w-full pl-7 pr-3 py-2 rounded-xl bg-zinc-900 border border-emerald-500/40 text-emerald-300 font-mono text-sm focus:outline-none focus:border-emerald-400" />
+                  <span class="absolute left-3 top-2.5 text-[#e87a24] font-mono text-xs">₹</span>
+                  <input type="number" step="0.01" min="0" required id="edit-prod-quoted" oninput="app.recalculateEditProfitPreview()" class="w-full pl-7 pr-3 py-2 rounded-xl bg-zinc-900 border border-[#e87a24]/40 text-[#fed7aa] font-mono text-sm focus:outline-none focus:border-[#e87a24]" />
                 </div>
               </div>
             </div>
 
             <!-- Live Profit Preview -->
             <div id="edit-profit-preview" class="p-2.5 rounded-xl bg-zinc-900 text-xs flex items-center justify-between">
-              <div id="edit-sale-profit-label">Sale Profit: <strong class="text-emerald-400">+₹0 (0%)</strong></div>
+              <div id="edit-sale-profit-label">Sale Profit: <strong class="text-[#e87a24]">+₹0 (0%)</strong></div>
               <div id="edit-floor-profit-label">Floor Profit: <strong class="text-amber-400">+₹0 (0%)</strong></div>
             </div>
           </div>
 
           <!-- DIRECT PHYSICAL STOCK COUNT IN STALL (UNITS) -->
-          <div class="p-3.5 rounded-2xl bg-zinc-950 border border-emerald-500/30 space-y-2">
-            <label class="block text-xs font-bold text-emerald-400 uppercase tracking-wider">Physical Stock Count in Stall (Units) *</label>
+          <div class="p-3.5 rounded-2xl bg-zinc-950 border border-[#e87a24]/30 space-y-2">
+            <label class="block text-xs font-bold text-[#e87a24] uppercase tracking-wider">Physical Stock Count in Stall (Units) *</label>
             <div class="flex items-center gap-3">
-              <input type="number" min="0" required id="edit-prod-stock" class="w-32 px-3.5 py-2 rounded-xl bg-zinc-900 border border-emerald-500/40 text-emerald-300 font-mono font-black text-lg focus:outline-none" />
+              <input type="number" min="0" required id="edit-prod-stock" class="w-32 px-3.5 py-2 rounded-xl bg-zinc-900 border border-[#e87a24]/40 text-[#fed7aa] font-mono font-black text-lg focus:outline-none" />
               <span class="text-xs text-zinc-400">
                 Direct physical stock count. Updates both <strong>Inventory</strong> and <strong>POS Book</strong> instantly.
               </span>
@@ -1151,7 +1148,7 @@
           <!-- Item Notes -->
           <div>
             <label class="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1">Item Notes</label>
-            <textarea id="edit-prod-notes" rows="2" class="w-full px-3.5 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 text-xs placeholder-zinc-500 focus:outline-none focus:border-emerald-500"></textarea>
+            <textarea id="edit-prod-notes" rows="2" class="w-full px-3.5 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 text-xs placeholder-zinc-500 focus:outline-none focus:border-[#e87a24]"></textarea>
           </div>
 
           <!-- Footer Actions -->
@@ -1161,7 +1158,7 @@
             </button>
             <div class="flex items-center gap-2">
               <button type="button" onclick="app.closeEditProductModal()" class="px-4 py-2.5 rounded-xl text-xs font-bold text-zinc-400 hover:text-zinc-200 transition-colors">Cancel</button>
-              <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-zinc-950 font-bold text-xs shadow-lg shadow-emerald-500/20 transition-all">Save Changes</button>
+              <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#e87a24] hover:bg-[#f28522] active:scale-95 text-zinc-950 font-bold text-xs shadow-lg shadow-[#e87a24]/20 transition-all">Save Changes</button>
             </div>
           </div>
         </form>
@@ -1179,7 +1176,7 @@
         <div class="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-zinc-800 bg-zinc-950/70">
           <div>
             <h2 class="text-base font-bold text-zinc-100 flex items-center gap-2">
-              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <svg class="w-4 h-4 text-[#e87a24]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
               <span>Adjust Stock Quantity</span>
             </h2>
             <p id="adj-product-header" class="text-xs text-zinc-400 truncate max-w-[280px]">Product Name (SKU)</p>
@@ -1226,7 +1223,7 @@
             <div class="text-right">
               <span class="text-[10px] uppercase font-bold text-zinc-500 block">NEW RESULTING STOCK</span>
               <div class="flex items-center gap-1.5 justify-end">
-                <strong id="adj-new-stock-label" class="text-base font-mono font-black text-emerald-400">0 units</strong>
+                <strong id="adj-new-stock-label" class="text-base font-mono font-black text-[#e87a24]">0 units</strong>
                 <span id="adj-delta-badge" class="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-rose-500/20 text-rose-300">(-1)</span>
               </div>
             </div>
@@ -1235,7 +1232,7 @@
           <!-- Quantity input -->
           <div>
             <label class="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1">Quantity *</label>
-            <input type="number" min="0" required id="adj-qty-input" value="1" oninput="app.recalculateAdjustPreview()" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 font-mono text-base font-bold focus:outline-none focus:border-emerald-500" />
+            <input type="number" min="0" required id="adj-qty-input" value="1" oninput="app.recalculateAdjustPreview()" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 font-mono text-base font-bold focus:outline-none focus:border-[#e87a24]" />
           </div>
 
           <!-- Quick Reason Pills -->
@@ -1247,13 +1244,13 @@
           <!-- Reason text input -->
           <div>
             <label class="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1">Reason / Note *</label>
-            <input type="text" id="adj-reason-input" required placeholder="Reason for adjustment" class="w-full px-3.5 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 text-xs focus:outline-none focus:border-emerald-500" />
+            <input type="text" id="adj-reason-input" required placeholder="Reason for adjustment" class="w-full px-3.5 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 text-xs focus:outline-none focus:border-[#e87a24]" />
           </div>
 
           <!-- Submit Buttons -->
           <div class="pt-2 border-t border-zinc-800 flex items-center justify-end gap-2.5">
             <button type="button" onclick="app.closeStockAdjustmentModal()" class="px-4 py-2.5 rounded-xl text-xs font-bold text-zinc-400 hover:text-zinc-200 transition-colors">Cancel</button>
-            <button type="submit" id="adj-submit-btn" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-zinc-950 font-bold text-xs shadow-lg shadow-emerald-500/20 transition-all">
+            <button type="submit" id="adj-submit-btn" class="px-5 py-2.5 rounded-xl bg-[#e87a24] hover:bg-[#f28522] active:scale-95 text-zinc-950 font-bold text-xs shadow-lg shadow-[#e87a24]/20 transition-all">
               Commit Stock Adjustment
             </button>
           </div>
@@ -1271,12 +1268,12 @@
         <!-- Header -->
         <div class="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-zinc-800 bg-zinc-950/70">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold">
+            <div class="w-10 h-10 rounded-2xl bg-[#e87a24]/15 text-[#e87a24] border border-[#e87a24]/30 flex items-center justify-center font-bold">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
             </div>
             <div>
               <h2 class="text-base sm:text-lg font-bold text-zinc-100 flex items-center gap-2">Stall Stock (Per SKU Breakdown)</h2>
-              <p class="text-xs text-zinc-400">Detailed inventory count per SKU with sales velocity during <strong class="text-emerald-400">Today</strong></p>
+              <p class="text-xs text-zinc-400">Detailed inventory count per SKU with sales velocity during <strong class="text-[#e87a24]">Today</strong></p>
             </div>
           </div>
           <button type="button" onclick="app.closeSkuBreakdownModal()" class="p-2 rounded-xl text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors">
@@ -1290,7 +1287,7 @@
             <span class="text-zinc-500">Total SKUs: </span>
             <strong id="bd-total-skus" class="text-zinc-200">0</strong>
           </div>
-          <div class="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 font-mono text-emerald-400">
+          <div class="px-3 py-1.5 rounded-xl bg-[#e87a24]/10 border border-[#e87a24]/20 font-mono text-[#e87a24]">
             <span>In Healthy Stock: </span>
             <strong id="bd-healthy-skus">0</strong>
           </div>
@@ -1302,7 +1299,7 @@
             <span>Out of Stock: </span>
             <strong id="bd-out-skus">0</strong>
           </div>
-          <div class="px-3 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 font-mono text-indigo-400">
+          <div class="px-3 py-1.5 rounded-xl bg-[#e87a24]/15 border border-[#e87a24]/30 font-mono text-[#e87a24]">
             <span>Total Stall Units: </span>
             <strong id="bd-total-units">0</strong>
           </div>
@@ -1312,7 +1309,7 @@
         <div class="p-4 sm:p-5 border-b border-zinc-800 flex items-center gap-3 flex-wrap justify-between bg-zinc-900/50">
           <div class="relative flex-1 min-w-[220px]">
             <svg class="w-4 h-4 text-zinc-500 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            <input type="text" id="bd-search-input" oninput="app.renderSkuBreakdownList()" placeholder="Filter by SKU code, coffee flavour, category..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-indigo-500" />
+            <input type="text" id="bd-search-input" oninput="app.renderSkuBreakdownList()" placeholder="Filter by SKU code, coffee flavour, category..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-[#e87a24]" />
           </div>
           <div class="flex items-center p-1 rounded-xl bg-zinc-950 border border-zinc-800 text-xs font-semibold">
             <button type="button" id="bd-filter-all" onclick="app.setSkuBreakdownFilter('all')" class="px-3 py-1 rounded-lg bg-zinc-800 text-zinc-100 font-bold">All</button>
@@ -1346,7 +1343,7 @@
         <div class="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-zinc-800 bg-zinc-950/70">
           <div>
             <div class="flex items-center gap-2 mb-0.5">
-              <span id="single-sell-cat-badge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">General</span>
+              <span id="single-sell-cat-badge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#e87a24]/10 text-[#e87a24] border border-[#e87a24]/20">General</span>
               <span id="single-sell-stock-badge" class="text-xs text-zinc-400 font-mono">10 in stock</span>
             </div>
             <h2 id="single-sell-title" class="text-base font-bold text-zinc-100 truncate">Product Name</h2>
@@ -1365,7 +1362,7 @@
             <label class="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1.5">Quantity to Sell</label>
             <div class="flex items-center gap-3">
               <button type="button" onclick="app.stepSingleSellQty(-1)" class="w-9 h-9 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-black text-sm active:scale-90">-</button>
-              <input type="number" id="single-sell-qty" min="1" value="1" oninput="app.recalculateSingleSell()" class="w-24 text-center py-2 rounded-xl bg-zinc-950 border border-zinc-800 font-mono font-black text-base text-zinc-100 focus:outline-none focus:border-emerald-500" />
+              <input type="number" id="single-sell-qty" min="1" value="1" oninput="app.recalculateSingleSell()" class="w-24 text-center py-2 rounded-xl bg-zinc-950 border border-zinc-800 font-mono font-black text-base text-zinc-100 focus:outline-none focus:border-[#e87a24]" />
               <button type="button" onclick="app.stepSingleSellQty(1)" class="w-9 h-9 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-black text-sm active:scale-90">+</button>
             </div>
           </div>
@@ -1377,8 +1374,8 @@
               <span id="single-sell-floor-label" class="text-[10px] text-amber-400 font-mono font-bold">Floor Limit: ₹0</span>
             </div>
             <div class="relative">
-              <span class="absolute left-3.5 top-2.5 text-emerald-400 font-mono text-sm">₹</span>
-              <input type="number" id="single-sell-price" step="1" min="0" oninput="app.recalculateSingleSell()" class="w-full pl-8 pr-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 font-mono font-bold text-base text-emerald-400 focus:outline-none focus:border-emerald-500" />
+              <span class="absolute left-3.5 top-2.5 text-[#e87a24] font-mono text-sm">₹</span>
+              <input type="number" id="single-sell-price" step="1" min="0" oninput="app.recalculateSingleSell()" class="w-full pl-8 pr-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 font-mono font-bold text-base text-[#e87a24] focus:outline-none focus:border-[#e87a24]" />
             </div>
             <div id="single-sell-floor-warn" class="hidden mt-1 text-[11px] text-amber-400 flex items-center gap-1 font-semibold">
               ⚠️ Selling below Floor Price limit!
@@ -1388,14 +1385,14 @@
           <!-- Total Due Display -->
           <div class="p-3.5 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-between">
             <span class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Total Collection:</span>
-            <span id="single-sell-total" class="font-mono font-black text-lg text-emerald-400">₹0</span>
+            <span id="single-sell-total" class="font-mono font-black text-lg text-[#e87a24]">₹0</span>
           </div>
 
           <!-- Payment Method Toggle -->
           <div>
             <label class="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1.5">Payment Method</label>
             <div class="grid grid-cols-2 gap-2">
-              <button type="button" id="single-pay-cash" onclick="app.setSingleSellPayment('cash')" class="py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 border-emerald-500/50 bg-emerald-500/10 text-emerald-300 shadow-sm">
+              <button type="button" id="single-pay-cash" onclick="app.setSingleSellPayment('cash')" class="py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 border-[#e87a24]/50 bg-[#e87a24]/10 text-[#fed7aa] shadow-sm">
                 <span>💵 Cash</span>
               </button>
               <button type="button" id="single-pay-upi" onclick="app.setSingleSellPayment('upi')" class="py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-200">
@@ -1406,14 +1403,14 @@
 
           <!-- Customer info (optional) -->
           <div class="grid grid-cols-2 gap-2 pt-1">
-            <input type="text" id="single-sell-cust-name" placeholder="Customer Name (optional)" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500" />
-            <input type="tel" id="single-sell-cust-phone" placeholder="Phone (optional)" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500" />
+            <input type="text" id="single-sell-cust-name" placeholder="Customer Name (optional)" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-[#e87a24]" />
+            <input type="tel" id="single-sell-cust-phone" placeholder="Phone (optional)" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-[#e87a24]" />
           </div>
 
           <!-- Action Buttons -->
           <div class="pt-2 border-t border-zinc-800 flex items-center justify-end gap-2.5">
             <button type="button" onclick="app.closeSingleSellModal()" class="px-4 py-2.5 rounded-xl text-xs font-bold text-zinc-400 hover:text-zinc-200 transition-colors">Cancel</button>
-            <button type="submit" id="single-sell-submit-btn" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-zinc-950 font-bold text-xs shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-1.5">
+            <button type="submit" id="single-sell-submit-btn" class="px-5 py-2.5 rounded-xl bg-[#e87a24] hover:bg-[#f28522] active:scale-95 text-zinc-950 font-bold text-xs shadow-lg shadow-[#e87a24]/20 transition-all flex items-center gap-1.5">
               <span>Record Sale & Bill</span>
               <svg class="w-3.5 h-3.5 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
             </button>
@@ -1454,7 +1451,7 @@
       <div class="relative bg-theme-card border border-theme-subtle rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl z-10 animate-fade-in">
         <div class="flex justify-between items-center pb-2 border-b border-theme-subtle mb-4">
           <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-[#e87a24] animate-pulse"></span>
             <span class="text-xs font-bold text-theme-primary">UPI Payment Terminal</span>
           </div>
           <button onclick="app.closeUpiTerminalModal()" class="text-theme-muted hover:text-theme-primary">✕</button>
@@ -1663,7 +1660,7 @@
       <div class="relative bg-theme-card border border-theme-subtle rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl z-10 max-h-[92vh] overflow-y-auto animate-fade-in">
         <div class="flex items-center justify-between pb-3 border-b border-theme-subtle">
           <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold">
+            <div class="w-9 h-9 rounded-xl bg-[#e87a24]/15 border border-[#e87a24]/30 flex items-center justify-center text-[#e87a24] font-bold">
               ⚡
             </div>
             <div>
@@ -1709,7 +1706,7 @@
               <button type="button" onclick="app.copySchemaSql()" class="px-3 py-1.5 rounded-xl bg-theme-elevated border border-theme-subtle text-theme-primary text-xs font-bold hover:bg-white/10 flex items-center gap-1">
                 📋 <span>Copy schema.sql</span>
               </button>
-              <button type="button" onclick="app.pushLocalToSupabase()" id="btn-push-sb" class="px-3 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold hover:bg-emerald-500/25 flex items-center gap-1">
+              <button type="button" onclick="app.pushLocalToSupabase()" id="btn-push-sb" class="px-3 py-1.5 rounded-xl bg-[#e87a24]/15 border border-[#e87a24]/30 text-[#e87a24] text-xs font-bold hover:bg-[#e87a24]/25 flex items-center gap-1">
                 ☁️ <span>Push Catalog to Supabase</span>
               </button>
             </div>

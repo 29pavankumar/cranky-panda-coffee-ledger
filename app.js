@@ -306,12 +306,12 @@ class StoreLedgerApp {
     
     // Update theme label and dot
     const labelMap = {
-      "cranky-dark": { name: "Cranky Dark (Default)", color: "bg-emerald-500" },
+      "cranky-dark": { name: "Cranky Espresso Amber (Default)", color: "bg-[#e87a24]" },
       "cranky-burgundy": { name: "Cranky Burgundy", color: "bg-rose-600" },
       "obsidian-violet": { name: "Obsidian", color: "bg-purple-500" },
       "sapphire": { name: "Sapphire", color: "bg-blue-500" },
       "terracotta": { name: "Terracotta", color: "bg-orange-500" },
-      "sage": { name: "Sage Gold", color: "bg-emerald-500" },
+      "sage": { name: "Sage Gold", color: "bg-[#e87a24]" },
       "nordic-light": { name: "Nordic Light", color: "bg-indigo-600" }
     };
 
@@ -577,78 +577,78 @@ class StoreLedgerApp {
       : "assets/logo.jpg";
 
     // ========================================================================
-    // CONTEXT 1: POS BOOK VIEW (Matches Exact Reference Image 1 from user)
+    // CONTEXT 1: POS BOOK VIEW (Matches 3-Color Cranky Panda Brand Palette)
     // ========================================================================
     if (context === "pos") {
       const activeBorder = inCartQty > 0
-        ? "border-emerald-500 ring-2 ring-emerald-500/30 shadow-lg shadow-emerald-500/10"
-        : "border-zinc-800 hover:border-zinc-700 shadow-sm";
+        ? "border-[#e87a24] ring-2 ring-[#e87a24]/40 shadow-lg shadow-[#e87a24]/15"
+        : "border-[#2b2420] hover:border-[#443831] shadow-sm";
 
       return `
-        <div class="p-3 sm:p-4 rounded-2xl border text-left flex flex-col justify-between transition-all relative select-none bg-zinc-900 ${activeBorder} ${isOutOfStock ? 'opacity-40' : ''}">
+        <div class="p-3 sm:p-4 rounded-2xl border text-left flex flex-col justify-between transition-all relative select-none bg-[#181412] ${activeBorder} ${isOutOfStock ? 'opacity-40' : ''}">
           <div>
             <!-- Wide Top Image Cover matching Image 1 -->
-            <div class="w-full h-28 sm:h-36 rounded-xl overflow-hidden mb-2.5 bg-zinc-950 border border-zinc-800/80">
+            <div class="w-full h-28 sm:h-36 rounded-xl overflow-hidden mb-2.5 bg-[#12100e] border border-[#2b2420]">
               <img src="${photoSrc}" alt="${p.name}" class="w-full h-full object-cover transition-transform hover:scale-105 duration-200" onerror="this.src='assets/logo.jpg'" loading="lazy" />
             </div>
 
-            <!-- Tags Row matching Image 1: Category, Flavour/Variant, Stock Status -->
+            <!-- Tags Row: Category, Flavour/Variant, Stock Status -->
             <div class="flex items-center justify-between text-[10px] mb-2 gap-1 flex-wrap">
               <div class="flex items-center gap-1">
-                <span class="px-2 py-0.5 rounded-md uppercase tracking-wider text-[9px] font-bold bg-zinc-800 text-zinc-300 border border-zinc-700">
+                <span class="px-2 py-0.5 rounded-md uppercase tracking-wider text-[9px] font-bold bg-[#221c19] text-[#d6c5b0] border border-[#2b2420]">
                   ${p.category || 'General'}
                 </span>
                 ${p.material || p.flavour ? `
-                  <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                  <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#e87a24]/15 text-[#fed7aa] border border-[#e87a24]/30">
                     ${p.material || p.flavour}
                   </span>
                 ` : ''}
               </div>
 
-              <!-- Stock Status Pill matching Image 1 -->
+              <!-- Stock Status Pill -->
               ${isOutOfStock ? `
-                <span class="text-rose-400 font-bold bg-rose-500/10 px-1.5 py-0.5 rounded text-[10px]">Sold Out</span>
+                <span class="text-[#8d7d70] font-bold bg-black/50 border border-[#443831] px-1.5 py-0.5 rounded text-[10px]">Sold Out</span>
               ` : isLowStock ? `
-                <span class="text-amber-400 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded text-[10px]">${p.stock} left</span>
+                <span class="text-[#fba758] font-bold bg-[#e87a24]/20 border border-[#e87a24]/35 px-1.5 py-0.5 rounded text-[10px]">${p.stock} left</span>
               ` : `
-                <span class="text-emerald-400 font-mono font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded text-[10px]">${p.stock} left</span>
+                <span class="text-[#fed7aa] font-mono font-bold bg-[#e87a24]/15 border border-[#e87a24]/30 px-1.5 py-0.5 rounded text-[10px]">${p.stock} left</span>
               `}
             </div>
 
             <!-- Product Title -->
-            <h4 class="text-xs sm:text-sm font-black text-zinc-100 line-clamp-2 leading-snug">
+            <h4 class="text-xs sm:text-sm font-black text-[#fdf6e7] line-clamp-2 leading-snug">
               ${p.name}
             </h4>
-            ${p.sku ? `<span class="text-[10px] font-mono font-bold text-zinc-400 block mt-0.5">${p.sku}</span>` : ''}
+            ${p.sku ? `<span class="text-[10px] font-mono font-bold text-[#8d7d70] block mt-0.5">${p.sku}</span>` : ''}
             ${p.canBeFree ? `
               <div class="mt-1">
-                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">🎁 Free Goodie</span>
+                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#e87a24]/15 text-[#fed7aa] border border-[#e87a24]/30">🎁 Free Goodie</span>
               </div>
             ` : ''}
           </div>
 
-          <!-- Price & Action Row matching Image 1 -->
-          <div class="mt-3 pt-2.5 border-t border-zinc-800/80 space-y-2">
-            <!-- Price Row: Large Green Tag Price + Amber Floor Price -->
+          <!-- Price & Action Row -->
+          <div class="mt-3 pt-2.5 border-t border-[#2b2420] space-y-2">
+            <!-- Price Row: Amber Sale Price + Muted Cream Floor Price -->
             <div class="flex items-baseline justify-between">
-              <span class="text-sm sm:text-base font-black font-mono text-emerald-400">₹${salePrice}</span>
-              <span class="text-[10px] font-mono text-amber-400 font-bold">Floor: ₹${floorPrice}</span>
+              <span class="text-sm sm:text-base font-black font-mono text-[#e87a24]">₹${salePrice}</span>
+              <span class="text-[10px] font-mono text-[#8d7d70] font-semibold">Floor: ₹${floorPrice}</span>
             </div>
 
             <!-- Action: If in cart, show [-] N in cart [+] stepper. If not in cart, show "+ Add" and "⚡" -->
             ${inCartQty > 0 ? `
-              <div class="flex items-center justify-between bg-emerald-500/15 border border-emerald-500/40 rounded-xl p-1">
-                <button type="button" onclick="app.updateCartQty('${p.id}', -1)" class="w-7 h-7 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-black flex items-center justify-center text-xs active:scale-90" title="Minus 1">-</button>
-                <span class="text-xs font-mono font-black text-emerald-400">${inCartQty} in cart</span>
-                <button type="button" onclick="app.updateCartQty('${p.id}', 1)" class="w-7 h-7 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black flex items-center justify-center text-xs active:scale-90" title="Add 1">+</button>
+              <div class="flex items-center justify-between bg-[#e87a24]/15 border border-[#e87a24]/40 rounded-xl p-1">
+                <button type="button" onclick="app.updateCartQty('${p.id}', -1)" class="w-7 h-7 rounded-lg bg-[#221c19] hover:bg-[#2b2420] text-[#fdf6e7] font-black flex items-center justify-center text-xs active:scale-90" title="Minus 1">-</button>
+                <span class="text-xs font-mono font-black text-[#fed7aa]">${inCartQty} in cart</span>
+                <button type="button" onclick="app.updateCartQty('${p.id}', 1)" class="w-7 h-7 rounded-lg bg-[#e87a24] hover:bg-[#f28522] text-[#0c0a09] font-black flex items-center justify-center text-xs active:scale-90" title="Add 1">+</button>
               </div>
             ` : `
               <div class="flex items-center gap-1.5">
-                <button type="button" ${isOutOfStock ? 'disabled' : ''} onclick="app.addToCart('${p.id}')" class="flex-1 py-2 px-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-zinc-950 font-black text-xs transition-all flex items-center justify-center gap-1 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed">
+                <button type="button" ${isOutOfStock ? 'disabled' : ''} onclick="app.addToCart('${p.id}')" class="flex-1 py-2 px-2 rounded-xl bg-[#e87a24] hover:bg-[#f28522] active:scale-95 text-[#0c0a09] font-black text-xs transition-all flex items-center justify-center gap-1 shadow-md shadow-[#e87a24]/20 disabled:opacity-40 disabled:cursor-not-allowed">
                   <svg class="w-3.5 h-3.5 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/></svg>
                   <span>Add</span>
                 </button>
-                <button type="button" ${isOutOfStock ? 'disabled' : ''} onclick="app.openSingleSellModal('${p.id}')" class="p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-amber-400 transition-colors disabled:opacity-40" title="Negotiate rate / single sell">
+                <button type="button" ${isOutOfStock ? 'disabled' : ''} onclick="app.openSingleSellModal('${p.id}')" class="p-2 rounded-xl bg-[#221c19] hover:bg-[#2b2420] text-[#e87a24] transition-colors disabled:opacity-40" title="Negotiate rate / single sell">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 </button>
               </div>
@@ -664,7 +664,7 @@ class StoreLedgerApp {
     const marginAmt = Math.max(0, salePrice - costPrice);
     const marginPct = salePrice > 0 ? Math.round((marginAmt / salePrice) * 100) : 0;
     const invBorder = inCartQty > 0
-      ? "border-emerald-500 ring-1 ring-emerald-500/30"
+      ? "border-[#e87a24] ring-1 ring-[#e87a24]/30"
       : "hover:border-theme-strong";
 
     return `
@@ -685,7 +685,7 @@ class StoreLedgerApp {
                     ${p.category || 'General'}
                   </span>
                   ${p.flavour || p.material ? `
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-900/40 text-blue-300 border border-blue-700/50 truncate max-w-[120px]">
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#e87a24]/15 text-[#fed7aa] border border-[#e87a24]/30 truncate max-w-[120px]">
                       ${p.flavour || p.material}
                     </span>
                   ` : ''}
@@ -693,9 +693,9 @@ class StoreLedgerApp {
 
                 <!-- Stock Badge -->
                 <span class="text-[10px] font-mono font-extrabold px-2 py-0.5 rounded-md shrink-0 ${
-                  isOutOfStock ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30' :
-                  isLowStock ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' :
-                  'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                  isOutOfStock ? 'bg-black/50 text-[#8d7d70] border border-[#443831]' :
+                  isLowStock ? 'bg-[#e87a24]/20 text-[#fba758] border border-[#e87a24]/35' :
+                  'bg-[#e87a24]/15 text-[#fed7aa] border border-[#e87a24]/30'
                 }">
                   ${p.stock || 0} IN STOCK
                 </span>
@@ -716,19 +716,19 @@ class StoreLedgerApp {
               <div class="text-sm font-black font-mono text-theme-primary mt-0.5">₹${costPrice}</div>
             </div>
             <div>
-              <div class="text-[10px] uppercase font-bold text-amber-400/90 tracking-wider">FLOOR</div>
+              <div class="text-[10px] uppercase font-bold text-[#d6c5b0] tracking-wider">FLOOR</div>
               <div class="text-sm font-black font-mono text-theme-primary mt-0.5">₹${floorPrice}</div>
             </div>
             <div>
-              <div class="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">SALE PRICE</div>
-              <div class="text-sm font-black font-mono text-emerald-400 mt-0.5">₹${salePrice}</div>
+              <div class="text-[10px] uppercase font-bold text-[#e87a24] tracking-wider">SALE PRICE</div>
+              <div class="text-sm font-black font-mono text-[#e87a24] mt-0.5">₹${salePrice}</div>
             </div>
           </div>
 
           <!-- Margin Line -->
           <div class="flex items-center justify-between text-xs px-1 mt-2.5">
             <span class="text-theme-muted font-medium text-[11px]">Margin @ Sale:</span>
-            <span class="font-mono font-bold text-emerald-400 text-xs">+₹${marginAmt} (${marginPct}%)</span>
+            <span class="font-mono font-bold text-[#fed7aa] text-xs">+₹${marginAmt} (${marginPct}%)</span>
           </div>
         </div>
 
@@ -742,10 +742,10 @@ class StoreLedgerApp {
 
           <!-- Add to Cart / Cart Counter Button with inline Stepper -->
           ${inCartQty > 0 ? `
-            <div class="flex-1 flex items-center justify-between bg-emerald-500/15 border border-emerald-500/40 rounded-xl p-0.5">
-              <button type="button" onclick="app.updateCartQty('${p.id}', -1)" class="w-7 h-7 rounded-lg bg-zinc-800 text-zinc-100 font-bold hover:bg-zinc-700 active:scale-90 flex items-center justify-center text-xs">-</button>
-              <span class="font-mono font-bold text-xs px-1 text-emerald-400">${inCartQty} in Cart</span>
-              <button type="button" onclick="app.updateCartQty('${p.id}', 1)" class="w-7 h-7 rounded-lg bg-emerald-500 text-zinc-950 font-bold hover:bg-emerald-400 active:scale-90 flex items-center justify-center text-xs">+</button>
+            <div class="flex-1 flex items-center justify-between bg-[#e87a24]/15 border border-[#e87a24]/40 rounded-xl p-0.5">
+              <button type="button" onclick="app.updateCartQty('${p.id}', -1)" class="w-7 h-7 rounded-lg bg-[#221c19] text-[#fdf6e7] font-bold hover:bg-[#2b2420] active:scale-90 flex items-center justify-center text-xs">-</button>
+              <span class="font-mono font-bold text-xs px-1 text-[#fed7aa]">${inCartQty} in Cart</span>
+              <button type="button" onclick="app.updateCartQty('${p.id}', 1)" class="w-7 h-7 rounded-lg bg-[#e87a24] text-[#0c0a09] font-black hover:bg-[#f28522] active:scale-90 flex items-center justify-center text-xs">+</button>
             </div>
           ` : `
             <button type="button" ${isOutOfStock ? 'disabled' : ''} onclick="app.addToCart('${p.id}')" class="flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl theme-btn-primary text-xs font-extrabold active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
@@ -1009,10 +1009,10 @@ class StoreLedgerApp {
             <div class="min-w-0">
               <h5 class="text-xs font-bold text-theme-primary truncate">${item.name}</h5>
               <div class="text-[10px] font-mono text-theme-muted">
-                ${item.isFreeGoodie ? `<span class="text-purple-400 font-bold">🎁 Free Goodie (₹0)</span>` : `₹${item.soldPrice} × ${item.quantity} = ₹${item.soldPrice * item.quantity}`}
+                ${item.isFreeGoodie ? `<span class="text-[#fed7aa] font-bold">🎁 Free Goodie (₹0)</span>` : `₹${item.soldPrice} × ${item.quantity} = ₹${item.soldPrice * item.quantity}`}
               </div>
               ${item.canBeFree ? `
-                <button type="button" onclick="app.toggleCartGoodie('${item.id}')" class="mt-1 px-2 py-0.5 rounded text-[10px] font-bold ${item.isFreeGoodie ? 'bg-purple-500 text-white' : 'bg-purple-500/20 text-purple-300 hover:bg-purple-500/30'} transition-all">
+                <button type="button" onclick="app.toggleCartGoodie('${item.id}')" class="mt-1 px-2 py-0.5 rounded text-[10px] font-bold ${item.isFreeGoodie ? 'bg-[#e87a24] text-[#0c0a09]' : 'bg-[#e87a24]/15 text-[#fed7aa] hover:bg-[#e87a24]/25'} transition-all">
                   🎁 ${item.isFreeGoodie ? 'Giveaway (₹0)' : 'Mark Free Goodie'}
                 </button>
               ` : ''}
@@ -1048,7 +1048,7 @@ class StoreLedgerApp {
     btns.forEach(m => {
       const btn = document.getElementById(`pay-btn-${m}`);
       if (m === method) {
-        btn.className = "py-2 px-2.5 rounded-xl border text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 border-theme-active bg-purple-500/10 text-theme-accent";
+        btn.className = "py-2 px-2.5 rounded-xl border text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 border-theme-active bg-[#e87a24]/15 text-[#fdf6e7]";
       } else {
         btn.className = "py-2 px-2.5 rounded-xl border text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 border-theme-subtle bg-theme-surface text-theme-muted hover:text-theme-primary";
       }
@@ -1550,11 +1550,11 @@ class StoreLedgerApp {
     const btnUpi = document.getElementById("single-pay-upi");
 
     if (method === "cash") {
-      if (btnCash) btnCash.className = "py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 border-emerald-500/50 bg-emerald-500/10 text-emerald-300 shadow-sm";
-      if (btnUpi) btnUpi.className = "py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-200";
+      if (btnCash) btnCash.className = "py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 border-[#e87a24]/50 bg-[#e87a24]/15 text-[#fed7aa] shadow-sm";
+      if (btnUpi) btnUpi.className = "py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 border-[#2b2420] bg-[#12100e] text-[#8d7d70] hover:text-[#fdf6e7]";
     } else {
-      if (btnCash) btnCash.className = "py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-200";
-      if (btnUpi) btnUpi.className = "py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 border-sky-500/50 bg-sky-500/10 text-sky-300 shadow-sm";
+      if (btnCash) btnCash.className = "py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 border-[#2b2420] bg-[#12100e] text-[#8d7d70] hover:text-[#fdf6e7]";
+      if (btnUpi) btnUpi.className = "py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 border-[#e87a24]/50 bg-[#e87a24]/15 text-[#fed7aa] shadow-sm";
     }
   }
 
@@ -1658,7 +1658,7 @@ class StoreLedgerApp {
     toast.className = `toast-pill ${type === "error" ? "toast-error" : ""}`;
     const icon = type === "error"
       ? `<svg class="w-4 h-4 text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`
-      : `<svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`;
+      : `<svg class="w-4 h-4 text-[#e87a24] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`;
     toast.innerHTML = `${icon}<span>${message}</span>`;
     container.appendChild(toast);
     setTimeout(() => {
@@ -1781,8 +1781,8 @@ class StoreLedgerApp {
     container.innerHTML = categories.map(cat => {
       const isSelected = this.addSelectedCategory === cat;
       const activeClass = isSelected
-        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 ring-1 ring-emerald-500/30"
-        : "bg-zinc-950 border border-zinc-800 text-zinc-400 hover:text-zinc-200";
+        ? "bg-[#e87a24] text-[#0c0a09] font-black shadow-md shadow-[#e87a24]/20"
+        : "bg-zinc-950 border border-[#2b2420] text-[#d6c5b0] hover:text-[#fdf6e7]";
       return `<button type="button" onclick="app.selectAddCategory('${cat}')" class="px-3 py-2 rounded-xl text-xs font-bold transition-all text-center ${activeClass}">${cat}</button>`;
     }).join("");
 
@@ -1805,15 +1805,15 @@ class StoreLedgerApp {
     let html = flavours.map(flv => {
       const isSelected = this.addSelectedFlavour === flv;
       const activeClass = isSelected
-        ? "bg-blue-600 text-white font-black shadow-md shadow-blue-600/30 ring-2 ring-blue-400/50"
-        : "bg-zinc-900 border border-zinc-800 text-zinc-300 hover:border-zinc-700";
+        ? "bg-[#e87a24] text-[#0c0a09] font-black shadow-md shadow-[#e87a24]/20"
+        : "bg-[#181412] border border-[#2b2420] text-[#d6c5b0] hover:border-[#443831]";
       return `<button type="button" onclick="app.selectAddFlavour('${flv}')" class="py-1.5 px-3 rounded-xl text-center transition-all text-xs font-bold ${activeClass}">${flv}</button>`;
     }).join("");
 
     // Custom button
     const customActiveClass = isCustom
-      ? "bg-blue-600 text-white font-black shadow-md shadow-blue-600/30 ring-2 ring-blue-400/50"
-      : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200";
+      ? "bg-[#e87a24] text-[#0c0a09] font-black shadow-md shadow-[#e87a24]/20"
+      : "bg-[#181412] border border-[#2b2420] text-[#8d7d70] hover:text-[#fdf6e7]";
     html += `<button type="button" onclick="app.toggleAddCustomFlavour()" class="py-1.5 px-3 rounded-xl text-center transition-all text-xs font-semibold ${customActiveClass}">+ Custom</button>`;
 
     container.innerHTML = html;
@@ -1870,7 +1870,7 @@ class StoreLedgerApp {
       const floorPct = floor > 0 ? Math.round((floorProfit / floor) * 100) : 0;
 
       if (saleLabel) {
-        saleLabel.innerHTML = `Sale Profit: <strong class="text-emerald-400">+₹${saleProfit.toLocaleString('en-IN')} (${salePct}%)</strong>`;
+        saleLabel.innerHTML = `Sale Profit: <strong class="text-[#e87a24]">+₹${saleProfit.toLocaleString('en-IN')} (${salePct}%)</strong>`;
       }
       if (floorLabel) {
         floorLabel.innerHTML = `Floor Profit: <strong class="text-amber-400">+₹${floorProfit.toLocaleString('en-IN')} (${floorPct}%)</strong>`;
@@ -2033,8 +2033,8 @@ class StoreLedgerApp {
     container.innerHTML = categories.map(cat => {
       const isSelected = this.editSelectedCategory === cat;
       const activeClass = isSelected
-        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 ring-1 ring-emerald-500/30"
-        : "bg-zinc-950 border border-zinc-800 text-zinc-400 hover:text-zinc-200";
+        ? "bg-[#e87a24] text-[#0c0a09] font-black shadow-md shadow-[#e87a24]/20"
+        : "bg-zinc-950 border border-[#2b2420] text-[#d6c5b0] hover:text-[#fdf6e7]";
       return `<button type="button" onclick="app.selectEditCategory('${cat}')" class="px-3 py-2 rounded-xl text-xs font-bold transition-all text-center ${activeClass}">${cat}</button>`;
     }).join("");
 
@@ -2057,14 +2057,14 @@ class StoreLedgerApp {
     let html = flavours.map(flv => {
       const isSelected = this.editSelectedFlavour === flv;
       const activeClass = isSelected
-        ? "bg-blue-600 text-white font-black shadow-md shadow-blue-600/30 ring-2 ring-blue-400/50"
-        : "bg-zinc-900 border border-zinc-800 text-zinc-300 hover:border-zinc-700";
+        ? "bg-[#e87a24] text-[#0c0a09] font-black shadow-md shadow-[#e87a24]/20"
+        : "bg-[#181412] border border-[#2b2420] text-[#d6c5b0] hover:border-[#443831]";
       return `<button type="button" onclick="app.selectEditFlavour('${flv}')" class="py-1.5 px-3 rounded-xl text-center transition-all text-xs font-bold ${activeClass}">${flv}</button>`;
     }).join("");
 
     const customActiveClass = isCustom
-      ? "bg-blue-600 text-white font-black shadow-md shadow-blue-600/30 ring-2 ring-blue-400/50"
-      : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200";
+      ? "bg-[#e87a24] text-[#0c0a09] font-black shadow-md shadow-[#e87a24]/20"
+      : "bg-[#181412] border border-[#2b2420] text-[#8d7d70] hover:text-[#fdf6e7]";
     html += `<button type="button" onclick="app.toggleEditCustomFlavour()" class="py-1.5 px-3 rounded-xl text-center transition-all text-xs font-semibold ${customActiveClass}">+ Custom</button>`;
 
     container.innerHTML = html;
@@ -2119,7 +2119,7 @@ class StoreLedgerApp {
       const floorPct = floor > 0 ? Math.round((floorProfit / floor) * 100) : 0;
 
       if (saleLabel) {
-        saleLabel.innerHTML = `Sale Profit: <strong class="text-emerald-400">+₹${saleProfit.toLocaleString('en-IN')} (${salePct}%)</strong>`;
+        saleLabel.innerHTML = `Sale Profit: <strong class="text-[#e87a24]">+₹${saleProfit.toLocaleString('en-IN')} (${salePct}%)</strong>`;
       }
       if (floorLabel) {
         floorLabel.innerHTML = `Floor Profit: <strong class="text-amber-400">+₹${floorProfit.toLocaleString('en-IN')} (${floorPct}%)</strong>`;
@@ -2253,10 +2253,10 @@ class StoreLedgerApp {
     const tabAdd = document.getElementById("adj-tab-add");
     const tabSet = document.getElementById("adj-tab-set");
 
-    const baseInactive = "text-zinc-400 hover:text-zinc-200 border-transparent";
-    if (tabReduce) tabReduce.className = `py-2 px-1 rounded-xl flex items-center justify-center gap-1 transition-all ${mode === "reduce" ? "bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-sm" : baseInactive}`;
-    if (tabAdd) tabAdd.className = `py-2 px-1 rounded-xl flex items-center justify-center gap-1 transition-all ${mode === "add" ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm" : baseInactive}`;
-    if (tabSet) tabSet.className = `py-2 px-1 rounded-xl flex items-center justify-center gap-1 transition-all ${mode === "set" ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 shadow-sm" : baseInactive}`;
+    const baseInactive = "text-[#8d7d70] hover:text-[#fdf6e7] border-transparent";
+    if (tabReduce) tabReduce.className = `py-2 px-1 rounded-xl flex items-center justify-center gap-1 transition-all ${mode === "reduce" ? "bg-[#221c19] text-[#fdf6e7] border border-[#e87a24]/50 font-bold shadow-sm" : baseInactive}`;
+    if (tabAdd) tabAdd.className = `py-2 px-1 rounded-xl flex items-center justify-center gap-1 transition-all ${mode === "add" ? "bg-[#e87a24] text-[#0c0a09] font-black shadow-sm" : baseInactive}`;
+    if (tabSet) tabSet.className = `py-2 px-1 rounded-xl flex items-center justify-center gap-1 transition-all ${mode === "set" ? "bg-[#221c19] text-[#fdf6e7] border border-[#e87a24]/50 font-bold shadow-sm" : baseInactive}`;
 
     // Render Quick Reasons
     const container = document.getElementById("adj-quick-reasons");
@@ -2297,12 +2297,12 @@ class StoreLedgerApp {
     } else if (this.adjustMode === "add") {
       result = current + qty;
       deltaText = `+${qty}`;
-      deltaClass = "bg-emerald-500/20 text-emerald-300";
+      deltaClass = "bg-[#e87a24]/20 text-[#fed7aa]";
     } else if (this.adjustMode === "set") {
       result = Math.max(0, qty);
       const diff = result - current;
       deltaText = diff >= 0 ? `+${diff}` : `${diff}`;
-      deltaClass = diff >= 0 ? "bg-emerald-500/20 text-emerald-300" : "bg-rose-500/20 text-rose-300";
+      deltaClass = diff >= 0 ? "bg-[#e87a24]/20 text-[#fed7aa]" : "bg-black/50 text-[#8d7d70] border border-[#443831]";
     }
 
     const curLabel = document.getElementById("adj-current-stock-label");
@@ -2468,11 +2468,11 @@ class StoreLedgerApp {
       const stock = p.stock || 0;
       let stockBadge = "";
       if (stock > 5) {
-        stockBadge = `<span class="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold font-mono text-xs">${stock} in stock</span>`;
+        stockBadge = `<span class="px-2.5 py-1 rounded-lg bg-[#e87a24]/15 border border-[#e87a24]/30 text-[#fed7aa] font-bold font-mono text-xs">${stock} in stock</span>`;
       } else if (stock > 0) {
-        stockBadge = `<span class="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold font-mono text-xs">${stock} low stock</span>`;
+        stockBadge = `<span class="px-2.5 py-1 rounded-lg bg-[#e87a24]/25 border border-[#e87a24]/40 text-[#fba758] font-bold font-mono text-xs">${stock} low stock</span>`;
       } else {
-        stockBadge = `<span class="px-2.5 py-1 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold font-mono text-xs">0 OUT OF STOCK</span>`;
+        stockBadge = `<span class="px-2.5 py-1 rounded-lg bg-black/50 border border-[#443831] text-[#8d7d70] font-bold font-mono text-xs">0 OUT OF STOCK</span>`;
       }
 
       // Calculate units sold today for this SKU
@@ -2591,9 +2591,9 @@ class StoreLedgerApp {
     emptyState.classList.add("hidden");
     container.innerHTML = filtered.map(bill => {
       const methodBadge = {
-        cash: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-        upi: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
-        card: 'bg-purple-500/15 text-purple-400 border-purple-500/30'
+        cash: 'bg-[#e87a24]/15 text-[#fed7aa] border-[#e87a24]/30',
+        upi: 'bg-[#221c19] text-[#fdf6e7] border-[#443831]',
+        card: 'bg-[#221c19] text-[#d6c5b0] border-[#443831]'
       }[bill.paymentMethod] || 'bg-zinc-800 text-zinc-300';
 
       return `
@@ -2611,7 +2611,7 @@ class StoreLedgerApp {
 
             <div class="flex items-center gap-3">
               <div class="text-right">
-                <div class="font-mono font-black text-base text-emerald-400">₹${bill.totalRevenue}</div>
+                <div class="font-mono font-black text-base text-[#e87a24]">₹${bill.totalRevenue}</div>
                 <div class="text-[10px] text-theme-muted">${new Date(bill.soldAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
               </div>
               <button onclick="app.openReceiptModal(app.bills.find(b => b.id === '${bill.id}'))" class="px-2.5 py-1.5 rounded-xl bg-theme-surface border border-theme-subtle text-xs font-bold text-theme-primary hover:bg-white/5 flex items-center gap-1">
@@ -2753,7 +2753,7 @@ class StoreLedgerApp {
             <div class="font-bold text-theme-primary">${name}</div>
             <div class="text-[10px] text-theme-muted">${data.bills} bills booked</div>
           </div>
-          <div class="font-mono font-black text-emerald-400">
+          <div class="font-mono font-black text-[#e87a24]">
             ₹${data.rev}
           </div>
         </div>
@@ -2787,14 +2787,14 @@ class StoreLedgerApp {
       badge.className = "px-2.5 py-1 rounded-xl text-xs font-bold font-mono bg-zinc-800 text-zinc-400";
     } else if (diff === 0) {
       diffEl.textContent = `₹0 (Balanced)`;
-      diffEl.className = "font-mono font-bold text-emerald-400";
+      diffEl.className = "font-mono font-bold text-[#e87a24]";
       badge.textContent = "Perfect Match";
-      badge.className = "px-2.5 py-1 rounded-xl text-xs font-bold font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+      badge.className = "px-2.5 py-1 rounded-xl text-xs font-bold font-mono bg-[#e87a24]/20 text-[#fed7aa] border border-[#e87a24]/30";
     } else if (diff > 0) {
       diffEl.textContent = `+₹${diff} (Surplus)`;
-      diffEl.className = "font-mono font-bold text-blue-400";
+      diffEl.className = "font-mono font-bold text-[#fed7aa]";
       badge.textContent = `+₹${diff} Surplus`;
-      badge.className = "px-2.5 py-1 rounded-xl text-xs font-bold font-mono bg-blue-500/20 text-blue-400 border border-blue-500/30";
+      badge.className = "px-2.5 py-1 rounded-xl text-xs font-bold font-mono bg-[#e87a24]/20 text-[#fed7aa] border border-[#e87a24]/30";
     } else {
       diffEl.textContent = `-₹${Math.abs(diff)} (Shortage)`;
       diffEl.className = "font-mono font-bold text-rose-400";
@@ -3147,7 +3147,7 @@ class StoreLedgerApp {
     if (label) {
       if (connected) {
         label.textContent = "Live & Connected";
-        label.className = "font-bold text-emerald-400 font-mono";
+        label.className = "font-bold text-[#e87a24] font-mono";
         if (disBtn) disBtn.classList.remove("hidden");
         if (pushBtn) pushBtn.classList.remove("opacity-50", "pointer-events-none");
       } else {
