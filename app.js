@@ -606,7 +606,7 @@ class StoreLedgerApp {
   // --------------------------------------------------------------------------
   switchTab(tabId) {
     // Guard: Staff portal cannot view admin-restricted tabs
-    if (this.currentPortal === "staff" && (tabId === "balance" || tabId === "approvals")) {
+    if (this.currentPortal === "staff" && tabId === "balance") {
       this.showToast("🔒 Restricted: This tab requires Admin Portal access.");
       tabId = "pos";
     }
@@ -614,7 +614,7 @@ class StoreLedgerApp {
     this.currentTab = tabId;
 
     // View sections
-    const views = ["balance", "pos", "inventory", "ledger", "closing", "approvals"];
+    const views = ["balance", "pos", "inventory", "ledger", "closing"];
     views.forEach(v => {
       const el = document.getElementById(`view-${v}`);
       if (el) {
@@ -651,7 +651,6 @@ class StoreLedgerApp {
     if (tabId === "balance") this.renderBalanceSheet();
     if (tabId === "pos") this.renderPosCatalog();
     if (tabId === "inventory") this.renderInventoryTable();
-    if (tabId === "approvals") this.renderApprovalsView();
     if (tabId === "ledger") this.renderLedgerList();
     if (tabId === "closing") this.renderClosingSummary();
   }
@@ -1269,16 +1268,12 @@ class StoreLedgerApp {
     if (dropAdminSection) dropAdminSection.classList.toggle("hidden", !isAdmin);
     if (dropStaffRecount) dropStaffRecount.classList.toggle("hidden", isAdmin);
 
-    // Nav tab visibility (Balance Sheet and Approvals are Admin Only)
+    // Nav tab visibility (Balance Sheet is Admin Only)
     const navBalance = document.getElementById("nav-tab-balance");
     const mobBalance = document.getElementById("mob-tab-balance");
-    const navApprovals = document.getElementById("nav-tab-approvals");
-    const mobApprovals = document.getElementById("mob-tab-approvals");
 
     if (navBalance) navBalance.classList.toggle("hidden", !isAdmin);
     if (mobBalance) mobBalance.classList.toggle("hidden", !isAdmin);
-    if (navApprovals) navApprovals.classList.toggle("hidden", !isAdmin);
-    if (mobApprovals) mobApprovals.classList.toggle("hidden", !isAdmin);
 
     // Inventory Top Buttons (Add SKU is admin only, Recount request is for staff)
     const btnAddSku = document.getElementById("btn-inv-add-sku");
@@ -1286,11 +1281,8 @@ class StoreLedgerApp {
     if (btnAddSku) btnAddSku.classList.toggle("hidden", !isAdmin);
     if (btnRecount) btnRecount.classList.toggle("hidden", isAdmin);
 
-    // Update Approvals Badges
-    this.updateApprovalsBadge();
-
     // If in Staff mode and on an admin-restricted tab, switch to POS Book immediately
-    if (!isAdmin && (this.currentTab === "balance" || this.currentTab === "approvals")) {
+    if (!isAdmin && this.currentTab === "balance") {
       this.switchTab("pos");
     }
   }

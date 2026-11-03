@@ -105,11 +105,6 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
               <span>Inventory</span>
             </button>
-            <button id="nav-tab-approvals" onclick="app.switchTab('approvals')" class="flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all text-theme-muted hover:text-theme-primary relative">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              <span>Approvals</span>
-              <span id="nav-approvals-badge" class="hidden px-1.5 py-0.2 rounded-full text-[10px] font-black bg-[#e87a24] text-[#0c0a09]">0</span>
-            </button>
             <button id="nav-tab-ledger" onclick="app.switchTab('ledger')" class="flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
               <span>Out Bills</span>
@@ -219,18 +214,8 @@
                     <span class="font-bold text-white group-hover:text-emerald-400 transition-colors">Switch Account</span>
                   </button>
 
-                  <!-- Admin Specific Options (Approvals, Staff Management, Brand Config) -->
+                  <!-- Admin Specific Options (Staff Management, Brand Config) -->
                   <div id="dropdown-admin-section" class="space-y-1 pt-1 border-t border-[#2e2621]/60">
-                    <button id="dropdown-btn-approvals" type="button" onclick="app.switchTab('approvals')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left hover:bg-white/5 transition-colors group">
-                      <div class="flex items-center gap-3">
-                        <div class="w-7 h-7 rounded-lg bg-amber-500/15 text-amber-400 flex items-center justify-center shrink-0">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        </div>
-                        <span class="font-bold text-white group-hover:text-amber-400 transition-colors">Pending Approvals</span>
-                      </div>
-                      <span id="dropdown-approvals-count" class="text-[10px] px-1.5 py-0.5 rounded font-mono bg-[#e87a24] text-[#0c0a09] font-black">0</span>
-                    </button>
-
                     <button id="dropdown-btn-manage-users" type="button" onclick="app.openManageUsersModal()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left hover:bg-white/5 transition-colors group">
                       <div class="w-7 h-7 rounded-lg bg-amber-500/15 text-amber-400 flex items-center justify-center shrink-0">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
@@ -930,67 +915,6 @@
         </div>
       </section>
 
-      <!-- =================================================================== -->
-      <!-- VIEW 5: STAFF APPROVALS CONSOLE (ADMIN ONLY)                        -->
-      <!-- =================================================================== -->
-      <section id="view-approvals" class="hidden space-y-6 max-w-5xl mx-auto pb-16">
-        <!-- Approvals Header Banner -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl bg-theme-card border border-theme-subtle">
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="text-[10px] font-extrabold uppercase tracking-wider text-theme-accent">Manager Console</span>
-              <span id="approvals-pending-pill" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#e87a24]/20 text-[#fed7aa] border border-[#e87a24]/30">0 Pending Requests</span>
-            </div>
-            <h2 class="text-base sm:text-xl font-black text-theme-primary flex items-center gap-2 mt-0.5">
-              <span>📋 Staff Stock Requests & Recount Approvals</span>
-            </h2>
-            <p class="text-xs text-theme-muted mt-0.5">Review physical counts, restocks, and damage reports submitted by floor staff before inventory updates.</p>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <button onclick="app.renderApprovalsView()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-theme-surface border border-theme-subtle hover:border-theme-strong text-theme-secondary hover:text-theme-primary text-xs font-bold transition-all active:scale-95">
-              <svg class="w-3.5 h-3.5 text-theme-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-              <span>Refresh</span>
-            </button>
-            <button onclick="app.openStaffRequestStockModal()" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl theme-btn-primary text-xs font-extrabold transition-all active:scale-95">
-              <span>+ Create Request</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Filter Tabs: Pending | Approved | Rejected | All History -->
-        <div class="flex items-center justify-between gap-3 flex-wrap">
-          <div class="flex items-center p-1 rounded-xl bg-theme-surface border border-theme-subtle text-xs font-semibold">
-            <button id="filter-approvals-pending" onclick="app.setApprovalTabFilter('pending')" class="px-3.5 py-1.5 rounded-lg font-bold bg-theme-elevated text-theme-primary transition-all">
-              Pending (<span id="count-approvals-pending">0</span>)
-            </button>
-            <button id="filter-approvals-approved" onclick="app.setApprovalTabFilter('approved')" class="px-3.5 py-1.5 rounded-lg text-theme-muted hover:text-theme-primary transition-all">
-              Approved (<span id="count-approvals-approved">0</span>)
-            </button>
-            <button id="filter-approvals-rejected" onclick="app.setApprovalTabFilter('rejected')" class="px-3.5 py-1.5 rounded-lg text-theme-muted hover:text-theme-primary transition-all">
-              Rejected (<span id="count-approvals-rejected">0</span>)
-            </button>
-            <button id="filter-approvals-all" onclick="app.setApprovalTabFilter('all')" class="px-3.5 py-1.5 rounded-lg text-theme-muted hover:text-theme-primary transition-all">
-              All History (<span id="count-approvals-all">0</span>)
-            </button>
-          </div>
-        </div>
-
-        <!-- Requests List Container -->
-        <div id="approvals-requests-list" class="space-y-3">
-          <!-- Dynamically populated cards -->
-        </div>
-
-        <!-- Empty State -->
-        <div id="approvals-empty-state" class="hidden text-center py-16 px-4 theme-card border-dashed">
-          <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-theme-surface border border-theme-subtle flex items-center justify-center text-3xl">
-            ✨
-          </div>
-          <h3 class="text-base font-bold text-theme-primary">All caught up!</h3>
-          <p class="text-xs text-theme-muted mt-1 max-w-sm mx-auto">There are no pending stock recount or restock requests from floor staff at this moment.</p>
-        </div>
-      </section>
-
     </main>
 
     <!-- Mobile Bottom Navigation Bar -->
@@ -1018,16 +942,16 @@
         <span id="mob-cart-badge" class="absolute -top-1 right-0 bg-rose-500 text-white font-mono text-[9px] font-black px-1 py-0.2 rounded-full border border-theme-primary">0</span>
       </button>
 
-      <button onclick="app.switchTab('approvals')" id="mob-tab-approvals" class="flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all text-theme-muted hover:text-theme-primary relative">
-        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <span class="text-[9px]">Approvals</span>
-        <span id="mob-approvals-badge" class="hidden absolute top-0 right-1 px-1 py-0.2 rounded-full text-[8px] font-black bg-[#e87a24] text-[#0c0a09]">0</span>
-      </button>
-
       <button onclick="app.switchTab('ledger')" id="mob-tab-ledger" class="flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all text-theme-muted hover:text-theme-primary">
         <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
         <span class="text-[9px]">Bills</span>
       </button>
+
+      <button onclick="app.switchTab('closing')" id="mob-tab-closing" class="flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all text-theme-muted hover:text-theme-primary">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        <span class="text-[9px]">Closing</span>
+      </button>
+    </nav>
 
       <button onclick="app.switchTab('closing')" id="mob-tab-closing" class="flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all text-theme-muted hover:text-theme-primary">
         <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
