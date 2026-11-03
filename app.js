@@ -43,26 +43,29 @@ const DEFAULT_USERS = [
     username: "admin",
     email: "admin@crankypanda.coffee",
     role: "admin",
+    roleLabel: "Store Owner / Admin",
     password: "123",
     avatarColor: "#e87a24"
   },
   {
     id: "usr-staff-1",
+    name: "Pavan Kumar M",
+    username: "pavan",
+    email: "pavan@crankypanda.coffee",
+    role: "staff",
+    roleLabel: "Floor Staff / Cashier",
+    password: "", // Empty string = 1-click password-less login enabled!
+    avatarColor: "#10b981"
+  },
+  {
+    id: "usr-staff-2",
     name: "Floor Cashier",
     username: "cashier",
     email: "cashier@crankypanda.coffee",
     role: "staff",
+    roleLabel: "Floor Staff / Cashier",
     password: "123",
-    avatarColor: "#fba758"
-  },
-  {
-    id: "usr-staff-2",
-    name: "Barista Pavan",
-    username: "pavan",
-    email: "pavan@crankypanda.coffee",
-    role: "staff",
-    password: "", // Empty string = 1-click password-less login enabled!
-    avatarColor: "#d6c5b0"
+    avatarColor: "#10b981"
   }
 ];
 
@@ -378,10 +381,17 @@ class StoreLedgerApp {
         } else {
           this.usersList = JSON.parse(JSON.stringify(DEFAULT_USERS));
         }
-        // Ensure default admin & staff users are present
+        // Ensure default admin & staff users are present and synced with labels
         DEFAULT_USERS.forEach(defU => {
-          if (!this.usersList.some(u => u.username === defU.username || u.email === defU.email)) {
+          const existing = this.usersList.find(u => u.username === defU.username || (u.email && u.email === defU.email));
+          if (!existing) {
             this.usersList.push(JSON.parse(JSON.stringify(defU)));
+          } else {
+            if (!existing.roleLabel) existing.roleLabel = defU.roleLabel;
+            if (existing.username === 'pavan' && existing.name === 'Barista Pavan') {
+              existing.name = 'Pavan Kumar M';
+            }
+            if (!existing.avatarColor) existing.avatarColor = defU.avatarColor;
           }
         });
 
@@ -574,6 +584,11 @@ class StoreLedgerApp {
     if (labelEl) labelEl.textContent = cfg.name;
     if (dotEl) {
       dotEl.className = `w-3 h-3 rounded-full ${cfg.color} shadow-sm`;
+    }
+
+    const dropThemeText = document.getElementById("dropdown-theme-mode-text");
+    if (dropThemeText) {
+      dropThemeText.textContent = themeId === "nordic-light" ? "LIGHT MODE" : "DARK MODE";
     }
 
     // Hide theme dropdown
@@ -1191,67 +1206,67 @@ class StoreLedgerApp {
     const isAdmin = this.currentPortal === "admin";
     this.isAdminUnlocked = isAdmin;
 
-    // Header portal pill
-    const badge = document.getElementById("header-portal-badge");
-    const badgeLabel = document.getElementById("header-portal-label");
-    const badgeDot = document.getElementById("header-portal-dot");
-    const switchBtnText = document.getElementById("btn-switch-portal-text");
-
-    if (badgeLabel) {
-      badgeLabel.textContent = isAdmin ? "👑 Admin Portal" : "👤 Staff Portal";
-    }
-    if (badge) {
-      if (isAdmin) {
-        badge.className = "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-black bg-[#e87a24]/15 text-[#e87a24] border border-[#e87a24]/30 shadow-sm cursor-pointer select-none";
-      } else {
-        badge.className = "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-black bg-blue-500/15 text-blue-300 border border-blue-500/30 shadow-sm cursor-pointer select-none";
-      }
-    }
-    if (badgeDot) {
-      badgeDot.className = isAdmin ? "w-2 h-2 rounded-full bg-[#e87a24] animate-pulse" : "w-2 h-2 rounded-full bg-blue-400";
-    }
-    if (switchBtnText) {
-      switchBtnText.textContent = isAdmin ? "Staff View" : "Admin View";
-    }
-
     // Active user info
     const u = this.currentUser || (isAdmin ? this.usersList.find(x => x.role === 'admin') : this.usersList.find(x => x.role === 'staff')) || this.usersList[0];
+    this.currentUser = u;
+    this.activeStaff = u.name;
+
+    // Header profile pill button (Sockadoodle style)
     const staffNameEl = document.getElementById("active-staff-name");
     const staffInitialEl = document.getElementById("active-staff-initial");
-    const adminStatusLabel = document.getElementById("admin-status-label");
-    const dropdownUserName = document.getElementById("dropdown-user-name");
-    const dropdownUserRole = document.getElementById("dropdown-user-role");
+    const roleDotEl = document.getElementById("header-user-role-dot");
+    const roleTextEl = document.getElementById("header-user-role-text");
 
     if (staffNameEl) staffNameEl.textContent = u.name;
-    if (staffInitialEl) staffInitialEl.textContent = (u.name || "P")[0].toUpperCase();
-    if (adminStatusLabel) {
-      adminStatusLabel.textContent = isAdmin ? "ADMIN" : "STAFF";
-      adminStatusLabel.className = isAdmin 
-        ? "text-[9px] text-[#e87a24] uppercase tracking-wider font-extrabold"
-        : "text-[9px] text-blue-400 uppercase tracking-wider font-extrabold";
+    if (staffInitialEl) {
+      staffInitialEl.textContent = (u.name || "P")[0].toUpperCase();
+      staffInitialEl.className = isAdmin 
+        ? "w-7 h-7 rounded-lg bg-[#e87a24] text-[#0c0a09] flex items-center justify-center text-xs font-black shrink-0 transition-colors"
+        : "w-7 h-7 rounded-lg bg-emerald-500 text-[#0c0a09] flex items-center justify-center text-xs font-black shrink-0 transition-colors";
     }
+    if (roleDotEl) {
+      roleDotEl.className = isAdmin ? "w-1.5 h-1.5 rounded-full bg-[#e87a24]" : "w-1.5 h-1.5 rounded-full bg-emerald-400";
+    }
+    if (roleTextEl) {
+      roleTextEl.textContent = isAdmin ? "ADMIN" : "STAFF";
+      roleTextEl.className = isAdmin 
+        ? "text-[9px] uppercase tracking-wider font-extrabold text-[#e87a24]"
+        : "text-[9px] uppercase tracking-wider font-extrabold text-emerald-400";
+    }
+
+    // Profile Dropdown Cards (Exact match to Sockadoodle Image 2)
+    const dropAvatarBox = document.getElementById("dropdown-avatar-box");
+    const dropAvatarInit = document.getElementById("dropdown-avatar-initial");
+    const dropdownUserName = document.getElementById("dropdown-user-name");
+    const dropUserHandleRole = document.getElementById("dropdown-user-handle-role");
+    const dropStoreBrand = document.getElementById("dropdown-store-brand");
+    const dropSellerName = document.getElementById("dropdown-seller-name");
+    const dropThemeText = document.getElementById("dropdown-theme-mode-text");
+
+    if (dropAvatarBox) {
+      dropAvatarBox.className = isAdmin 
+        ? "w-12 h-12 rounded-xl bg-[#e87a24] text-[#0c0a09] flex items-center justify-center font-black text-xl shrink-0 transition-colors"
+        : "w-12 h-12 rounded-xl bg-emerald-500 text-[#0c0a09] flex items-center justify-center font-black text-xl shrink-0 transition-colors";
+    }
+    if (dropAvatarInit) dropAvatarInit.textContent = (u.name || "P")[0].toUpperCase();
     if (dropdownUserName) dropdownUserName.textContent = u.name;
-    if (dropdownUserRole) dropdownUserRole.textContent = `Role: ${u.role === 'admin' ? 'Administrator' : 'Floor Staff'} (@${u.username})`;
-
-    // Profile dropdown items
-    const dropSwitchLabel = document.getElementById("dropdown-portal-switch-label");
-    const dropBadge = document.getElementById("dropdown-portal-badge");
-    if (dropSwitchLabel) dropSwitchLabel.textContent = isAdmin ? "Switch to Staff Portal" : "Switch to Admin Portal";
-    if (dropBadge) {
-      dropBadge.textContent = isAdmin ? "Admin Mode" : "Staff Mode";
-      dropBadge.className = isAdmin ? "text-[10px] px-1.5 py-0.5 rounded font-mono bg-[#e87a24]/20 text-[#fed7aa]" : "text-[10px] px-1.5 py-0.5 rounded font-mono bg-blue-500/20 text-blue-300";
+    if (dropUserHandleRole) {
+      const roleDescr = u.roleLabel || (isAdmin ? "Store Owner / Admin" : "Floor Staff / Cashier");
+      dropUserHandleRole.textContent = `@${u.username} • ${roleDescr}`;
+    }
+    if (dropStoreBrand) {
+      const activeB = this.getActiveBrand();
+      dropStoreBrand.textContent = activeB?.name || "Cranky Panda";
+    }
+    if (dropSellerName) dropSellerName.textContent = u.name;
+    if (dropThemeText) {
+      dropThemeText.textContent = this.currentTheme === "nordic-light" ? "LIGHT MODE" : "DARK MODE";
     }
 
-    const dropManageUsers = document.getElementById("dropdown-btn-manage-users");
-    const dropApprovals = document.getElementById("dropdown-btn-approvals");
-    const dropBrandSettings = document.getElementById("dropdown-btn-brand-settings");
-    const dropBackup = document.getElementById("dropdown-btn-backup");
+    // Role-specific sections in dropdown
+    const dropAdminSection = document.getElementById("dropdown-admin-section");
     const dropStaffRecount = document.getElementById("dropdown-btn-staff-recount");
-
-    if (dropManageUsers) dropManageUsers.classList.toggle("hidden", !isAdmin);
-    if (dropApprovals) dropApprovals.classList.toggle("hidden", !isAdmin);
-    if (dropBrandSettings) dropBrandSettings.classList.toggle("hidden", !isAdmin);
-    if (dropBackup) dropBackup.classList.toggle("hidden", !isAdmin);
+    if (dropAdminSection) dropAdminSection.classList.toggle("hidden", !isAdmin);
     if (dropStaffRecount) dropStaffRecount.classList.toggle("hidden", isAdmin);
 
     // Nav tab visibility (Balance Sheet and Approvals are Admin Only)
@@ -1265,7 +1280,7 @@ class StoreLedgerApp {
     if (navApprovals) navApprovals.classList.toggle("hidden", !isAdmin);
     if (mobApprovals) mobApprovals.classList.toggle("hidden", !isAdmin);
 
-    // Inventory Top Buttons
+    // Inventory Top Buttons (Add SKU is admin only, Recount request is for staff)
     const btnAddSku = document.getElementById("btn-inv-add-sku");
     const btnRecount = document.getElementById("btn-inv-recount");
     if (btnAddSku) btnAddSku.classList.toggle("hidden", !isAdmin);
@@ -1274,10 +1289,21 @@ class StoreLedgerApp {
     // Update Approvals Badges
     this.updateApprovalsBadge();
 
-    // If in Staff mode and on admin tab, switch to POS Book
+    // If in Staff mode and on an admin-restricted tab, switch to POS Book immediately
     if (!isAdmin && (this.currentTab === "balance" || this.currentTab === "approvals")) {
       this.switchTab("pos");
     }
+  }
+
+  toggleThemeMode() {
+    const isCurrentlyLight = this.currentTheme === "nordic-light";
+    const nextTheme = isCurrentlyLight ? "cranky-dark" : "nordic-light";
+    this.setTheme(nextTheme, true);
+    const textEl = document.getElementById("dropdown-theme-mode-text");
+    if (textEl) {
+      textEl.textContent = nextTheme === "nordic-light" ? "LIGHT MODE" : "DARK MODE";
+    }
+    this.showToast(`Theme changed to ${nextTheme === "nordic-light" ? "Light Mode" : "Dark Mode"}`, "info");
   }
 
   switchPortal(targetPortal) {
@@ -1338,7 +1364,7 @@ class StoreLedgerApp {
 
     this.renderQuickLoginPresets();
     if (modal) modal.classList.remove("hidden");
-    setTimeout(() => { if (userInput) userInput.focus(); }, 100);
+    setTimeout(() => { if (userInput && typeof userInput.focus === 'function') userInput.focus(); }, 100);
   }
 
   closeLoginModal() {
