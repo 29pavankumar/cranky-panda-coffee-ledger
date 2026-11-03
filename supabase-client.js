@@ -378,6 +378,44 @@ class SupabaseSyncService {
       return false;
     }
   }
+
+  // --------------------------------------------------------------------------
+  // BUSINESS TRANSACTIONS (BALANCE SHEET)
+  // --------------------------------------------------------------------------
+  async saveBusinessTransaction(tx, brandId = "brand-1") {
+    if (!this.isConnected || !this.client) return false;
+    try {
+      const payload = {
+        id: tx.id,
+        brand_id: brandId,
+        type: tx.type,
+        category: tx.category,
+        amount: tx.amount,
+        payment_mode: tx.paymentMode,
+        date: tx.date,
+        note: tx.note,
+        recorded_by: tx.recordedBy
+      };
+      const { error } = await this.client.from("business_transactions").upsert(payload);
+      if (error) throw error;
+      return true;
+    } catch (e) {
+      console.error("Failed to save transaction to Supabase:", e);
+      return false;
+    }
+  }
+
+  async deleteBusinessTransaction(id) {
+    if (!this.isConnected || !this.client) return false;
+    try {
+      const { error } = await this.client.from("business_transactions").delete().eq("id", id);
+      if (error) throw error;
+      return true;
+    } catch (e) {
+      console.error("Failed to delete transaction from Supabase:", e);
+      return false;
+    }
+  }
 }
 
 // Global instance

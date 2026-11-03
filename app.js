@@ -111,7 +111,7 @@ async function compressImage(file, { maxWidth = 640, maxHeight = 640, quality = 
 class StoreLedgerApp {
   constructor() {
     this.storageKey = "cranky_panda_zero_slate_v10";
-    this.currentTab = "inventory";
+    this.currentTab = "balance";
     this.currentTheme = "cranky-dark";
     this.isAdminUnlocked = false;
     this.cart = [];
@@ -128,6 +128,13 @@ class StoreLedgerApp {
     this.skuBreakdownFilter = "all";
     this.singleSellProduct = null;
     this.singleSellPaymentMethod = "cash";
+
+    // Balance Sheet & Non-Sales Ledger State
+    this.startingCapital = 25000;
+    this.balanceTransactions = [];
+    this.balanceTypeFilter = "all";
+    this.balanceCategoryFilter = "all";
+    this.balanceSearchQuery = "";
 
     // Load initial state from localStorage or defaults
     this.loadState();
@@ -187,6 +194,8 @@ class StoreLedgerApp {
         this.activeStaff = parsed.activeStaff || this.staffList[0].name;
         this.currentTheme = parsed.currentTheme || "cranky-dark";
         this.drawerState = parsed.drawerState || { float: 0, expenses: 0, counted: 0 };
+        this.startingCapital = parsed.startingCapital !== undefined ? Number(parsed.startingCapital) : 25000;
+        this.balanceTransactions = Array.isArray(parsed.balanceTransactions) ? parsed.balanceTransactions : [];
       } else {
         this.brands = DEFAULT_BRANDS;
         this.activeBrandId = "brand-1";
@@ -196,6 +205,8 @@ class StoreLedgerApp {
         this.activeStaff = this.staffList[0].name;
         this.currentTheme = "cranky-dark";
         this.drawerState = { float: 0, expenses: 0, counted: 0 };
+        this.startingCapital = 25000;
+        this.balanceTransactions = [];
         this.saveState();
       }
     } catch (e) {
@@ -206,6 +217,8 @@ class StoreLedgerApp {
       this.activeBrandId = "brand-1";
       this.staffList = DEFAULT_STAFF;
       this.activeStaff = this.staffList[0].name;
+      this.startingCapital = 25000;
+      this.balanceTransactions = [];
     }
   }
 
@@ -219,7 +232,9 @@ class StoreLedgerApp {
         staffList: this.staffList,
         activeStaff: this.activeStaff,
         currentTheme: this.currentTheme,
-        drawerState: this.drawerState
+        drawerState: this.drawerState,
+        startingCapital: this.startingCapital,
+        balanceTransactions: this.balanceTransactions
       };
       localStorage.setItem(this.storageKey, JSON.stringify(payload));
     } catch (e) {
@@ -251,6 +266,7 @@ class StoreLedgerApp {
     this.initSupabaseSync();
 
     // Render Views
+    this.renderBalanceSheet();
     this.renderPosCatalog();
     this.renderInventoryTable();
     this.renderLedgerList();
@@ -342,7 +358,7 @@ class StoreLedgerApp {
     this.currentTab = tabId;
 
     // View sections
-    const views = ["pos", "inventory", "ledger", "closing"];
+    const views = ["balance", "pos", "inventory", "ledger", "closing"];
     views.forEach(v => {
       const el = document.getElementById(`view-${v}`);
       if (el) {
@@ -368,18 +384,419 @@ class StoreLedgerApp {
       const mobBtn = document.getElementById(`mob-tab-${v}`);
       if (mobBtn) {
         if (v === tabId) {
-          mobBtn.className = "flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all text-theme-accent font-bold scale-105";
+          mobBtn.className = "flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all text-theme-accent font-bold scale-105";
         } else {
-          mobBtn.className = "flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all text-theme-muted hover:text-theme-primary";
+          mobBtn.className = "flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all text-theme-muted hover:text-theme-primary";
         }
       }
     });
 
     // Refresh specific view when selected
+    if (tabId === "balance") this.renderBalanceSheet();
     if (tabId === "pos") this.renderPosCatalog();
     if (tabId === "inventory") this.renderInventoryTable();
     if (tabId === "ledger") this.renderLedgerList();
     if (tabId === "closing") this.renderClosingSummary();
+  }
+
+  // --------------------------------------------------------------------------
+  // ESCAPE HTML HELPER
+  // --------------------------------------------------------------------------
+  escapeHtml(str) {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  // ==========================================================================
+  // BALANCE SHEET & BUSINESS CASH TRACKER (AUTO-LINKED TO SALES & EXPENSES)
+  // ==========================================================================
+  renderBalanceSheet() {
+    // 1. Sync starting capital input value
+    const startCapInput = document.getElementById("balance-starting-capital-input");
+    if (startCapInput && document.activeElement !== startCapInput) {
+      startCapInput.value = this.startingCapital;
+    }
+
+    // 2. Compute non-sales totals from balanceTransactions
+    let totalOwnerAdded = 0;
+    let otherMoneyReceived = 0;
+    let totalExpensesPaid = 0;
+
+    (this.balanceTransactions || []).forEach(tx => {
+      const amt = Number(tx.amount) || 0;
+      if (tx.type === "owner_capital") {
+        totalOwnerAdded += amt;
+      } else if (tx.type === "other_income") {
+        otherMoneyReceived += amt;
+      } else if (tx.type === "expense") {
+        totalExpensesPaid += amt;
+      }
+    });
+
+    // 3. Compute live sales revenue dynamically from this.bills (active/non-void)
+    let totalSales = 0;
+    let cashSales = 0;
+    let digitalSales = 0;
+    let salesCount = 0;
+
+    (this.bills || []).forEach(b => {
+      if (b.isVoid) return;
+      const rev = Number(b.totalRevenue) || 0;
+      totalSales += rev;
+      salesCount++;
+      if (b.paymentMethod === "cash") {
+        cashSales += rev;
+      } else {
+        digitalSales += rev;
+      }
+    });
+
+    // 4. Calculate total money currently available (Exact formula from user's sheet)
+    const startingCap = Number(this.startingCapital) || 0;
+    const totalMoneyAvailable = startingCap + totalOwnerAdded + totalSales + otherMoneyReceived - totalExpensesPaid;
+    const totalInvested = startingCap + totalOwnerAdded;
+
+    // Helper formatters
+    const fmt = (n) => "₹" + Number(n).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmtCompact = (n) => "₹" + Number(n).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+
+    // 5. Update Top Executive KPI Cards
+    const kpiAvail = document.getElementById("bal-kpi-available");
+    if (kpiAvail) kpiAvail.textContent = fmt(totalMoneyAvailable);
+
+    const kpiAvailSub = document.getElementById("bal-kpi-available-sub");
+    if (kpiAvailSub) {
+      kpiAvailSub.textContent = `₹${fmtCompact(startingCap)} start + ₹${fmtCompact(totalSales)} sales - ₹${fmtCompact(totalExpensesPaid)} exp`;
+    }
+
+    const kpiInv = document.getElementById("bal-kpi-invested");
+    if (kpiInv) kpiInv.textContent = fmt(totalInvested);
+
+    const kpiInvSub = document.getElementById("bal-kpi-invested-sub");
+    if (kpiInvSub) {
+      kpiInvSub.textContent = `₹${fmtCompact(startingCap)} start + ₹${fmtCompact(totalOwnerAdded)} added`;
+    }
+
+    const kpiSales = document.getElementById("bal-kpi-sales");
+    if (kpiSales) kpiSales.textContent = fmt(totalSales);
+
+    const kpiSalesSub = document.getElementById("bal-kpi-sales-sub");
+    if (kpiSalesSub) {
+      kpiSalesSub.textContent = `${salesCount} bills • Cash: ${fmtCompact(cashSales)} | UPI: ${fmtCompact(digitalSales)}`;
+    }
+
+    const kpiExp = document.getElementById("bal-kpi-expenses");
+    if (kpiExp) kpiExp.textContent = fmt(totalExpensesPaid);
+
+    const kpiExpSub = document.getElementById("bal-kpi-expenses-sub");
+    if (kpiExpSub) {
+      const expCount = (this.balanceTransactions || []).filter(t => t.type === "expense").length;
+      kpiExpSub.textContent = `${expCount} expense transactions logged`;
+    }
+
+    // 6. Update Money Summary Table Rows (Faithful to Reference Sheet)
+    const sumStart = document.getElementById("summary-starting-capital");
+    if (sumStart) sumStart.textContent = fmt(startingCap);
+
+    const sumOwner = document.getElementById("summary-owner-capital");
+    if (sumOwner) sumOwner.textContent = fmt(totalOwnerAdded);
+
+    const sumSales = document.getElementById("summary-total-sales");
+    if (sumSales) sumSales.textContent = fmt(totalSales);
+
+    const sumCash = document.getElementById("summary-sales-cash");
+    if (sumCash) sumCash.textContent = `Cash: ${fmt(cashSales)}`;
+
+    const sumDigital = document.getElementById("summary-sales-digital");
+    if (sumDigital) sumDigital.textContent = `UPI / Razorpay: ${fmt(digitalSales)}`;
+
+    const sumCount = document.getElementById("summary-sales-count");
+    if (sumCount) sumCount.textContent = `${salesCount} bills booked`;
+
+    const sumOther = document.getElementById("summary-other-income");
+    if (sumOther) sumOther.textContent = fmt(otherMoneyReceived);
+
+    const sumExp = document.getElementById("summary-total-expenses");
+    if (sumExp) sumExp.textContent = `- ${fmt(totalExpensesPaid)}`;
+
+    const sumTotal = document.getElementById("summary-total-available");
+    if (sumTotal) sumTotal.textContent = fmt(totalMoneyAvailable);
+
+    // 7. Render Non-Sales Transactions Table
+    this.renderBalanceTransactionsTable();
+  }
+
+  renderBalanceTransactionsTable() {
+    const tbody = document.getElementById("balance-tx-tbody");
+    const emptyState = document.getElementById("balance-empty-state");
+    const tableWrapper = document.getElementById("balance-tx-table-wrapper");
+    const countBadge = document.getElementById("balance-tx-count-badge");
+    if (!tbody) return;
+
+    let list = [...(this.balanceTransactions || [])];
+
+    // Filter by type
+    if (this.balanceTypeFilter && this.balanceTypeFilter !== "all") {
+      list = list.filter(t => t.type === this.balanceTypeFilter);
+    }
+
+    // Filter by category
+    if (this.balanceCategoryFilter && this.balanceCategoryFilter !== "all") {
+      list = list.filter(t => t.category === this.balanceCategoryFilter);
+    }
+
+    // Filter by search query
+    if (this.balanceSearchQuery && this.balanceSearchQuery.trim() !== "") {
+      const q = this.balanceSearchQuery.toLowerCase();
+      list = list.filter(t =>
+        (t.note && t.note.toLowerCase().includes(q)) ||
+        (t.category && t.category.toLowerCase().includes(q)) ||
+        (t.paymentMode && t.paymentMode.toLowerCase().includes(q)) ||
+        (t.recordedBy && t.recordedBy.toLowerCase().includes(q))
+      );
+    }
+
+    if (countBadge) {
+      countBadge.textContent = `${list.length} of ${this.balanceTransactions.length} entries`;
+    }
+
+    if (list.length === 0) {
+      tbody.innerHTML = "";
+      if (emptyState) emptyState.classList.remove("hidden");
+      if (tableWrapper) tableWrapper.classList.add("hidden");
+      return;
+    }
+
+    if (emptyState) emptyState.classList.add("hidden");
+    if (tableWrapper) tableWrapper.classList.remove("hidden");
+
+    tbody.innerHTML = list.map(tx => {
+      // Date formatting
+      const dateObj = new Date(tx.date || tx.createdAt);
+      const dateFormatted = !isNaN(dateObj)
+        ? dateObj.toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }) +
+          " • " +
+          dateObj.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true })
+        : (tx.date || "—");
+
+      // Type badge & color styling
+      let typeBadge = "";
+      let amountFormatted = "";
+      if (tx.type === "expense") {
+        typeBadge = `<span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30">💸 Expense Out</span>`;
+        amountFormatted = `<span class="font-mono font-bold text-rose-400">- ₹${Number(tx.amount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>`;
+      } else if (tx.type === "owner_capital") {
+        typeBadge = `<span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">💼 Owner Capital</span>`;
+        amountFormatted = `<span class="font-mono font-bold text-emerald-400">+ ₹${Number(tx.amount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>`;
+      } else {
+        typeBadge = `<span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-blue-500/15 text-blue-300 border border-blue-500/30">📥 Other In</span>`;
+        amountFormatted = `<span class="font-mono font-bold text-blue-400">+ ₹${Number(tx.amount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>`;
+      }
+
+      // Payment mode badge
+      const modeLabel = tx.paymentMode === "upi" ? "UPI / QR" : tx.paymentMode === "card" ? "Card" : "Cash";
+      const modeClass = tx.paymentMode === "cash" ? "bg-amber-500/10 text-amber-300 border-amber-500/20" : "bg-sky-500/10 text-sky-300 border-sky-500/20";
+
+      return `
+        <tr class="hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3 text-theme-muted font-mono whitespace-nowrap">${dateFormatted}</td>
+          <td class="px-4 py-3 whitespace-nowrap">${typeBadge}</td>
+          <td class="px-4 py-3 font-semibold text-theme-primary whitespace-nowrap">${this.escapeHtml(tx.category || "General")}</td>
+          <td class="px-4 py-3 text-theme-secondary max-w-xs truncate" title="${this.escapeHtml(tx.note || "")}">
+            ${this.escapeHtml(tx.note || "—")}
+            <span class="block text-[10px] text-theme-muted mt-0.5">by ${this.escapeHtml(tx.recordedBy || "Staff")}</span>
+          </td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            <span class="px-2 py-0.5 rounded text-[10px] font-semibold border ${modeClass}">${modeLabel}</span>
+          </td>
+          <td class="px-4 py-3 text-right whitespace-nowrap">${amountFormatted}</td>
+          <td class="px-4 py-3 text-center whitespace-nowrap">
+            <button onclick="app.deleteTransaction('${tx.id}')" class="p-1 rounded-lg text-theme-muted hover:text-rose-400 hover:bg-rose-500/10 transition-colors" title="Delete transaction">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  handleSaveStartingCapital() {
+    const input = document.getElementById("balance-starting-capital-input");
+    if (!input) return;
+    const val = parseFloat(input.value);
+    if (isNaN(val) || val < 0) {
+      this.showToast("Please enter a valid starting capital amount (₹0 or more)", "error");
+      return;
+    }
+    this.startingCapital = val;
+    this.saveState();
+    this.renderBalanceSheet();
+    this.playChime("success");
+    this.showToast(`Starting capital updated to ₹${val.toLocaleString("en-IN")}!`);
+  }
+
+  handleBalanceFilterChange() {
+    const sInput = document.getElementById("balance-search-input");
+    const tSelect = document.getElementById("balance-type-filter");
+    const cSelect = document.getElementById("balance-category-filter");
+
+    if (sInput) this.balanceSearchQuery = sInput.value;
+    if (tSelect) this.balanceTypeFilter = tSelect.value;
+    if (cSelect) this.balanceCategoryFilter = cSelect.value;
+
+    this.renderBalanceTransactionsTable();
+  }
+
+  openAddTransactionModal(defaultType = "expense") {
+    const modal = document.getElementById("modal-add-balance-tx");
+    if (!modal) return;
+
+    // Reset inputs
+    const amtInput = document.getElementById("tx-amount-input");
+    const noteInput = document.getElementById("tx-note-input");
+    const dateInput = document.getElementById("tx-date-input");
+
+    if (amtInput) amtInput.value = "";
+    if (noteInput) noteInput.value = "";
+    if (dateInput) {
+      const now = new Date();
+      const localIso = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      dateInput.value = localIso;
+    }
+
+    this.setTxType(defaultType);
+    modal.classList.remove("hidden");
+  }
+
+  closeAddTransactionModal() {
+    const modal = document.getElementById("modal-add-balance-tx");
+    if (modal) modal.classList.add("hidden");
+  }
+
+  setTxType(type) {
+    const typeVal = document.getElementById("tx-type-value");
+    if (typeVal) typeVal.value = type;
+
+    const btnExp = document.getElementById("btn-tx-type-expense");
+    const btnOwn = document.getElementById("btn-tx-type-owner");
+    const btnOth = document.getElementById("btn-tx-type-other");
+
+    const inactiveClass = "py-2.5 px-2 rounded-xl text-xs font-bold text-center border transition-all bg-theme-surface border-theme-subtle text-theme-muted hover:text-theme-primary";
+    if (btnExp) btnExp.className = inactiveClass;
+    if (btnOwn) btnOwn.className = inactiveClass;
+    if (btnOth) btnOth.className = inactiveClass;
+
+    if (type === "expense" && btnExp) {
+      btnExp.className = "py-2.5 px-2 rounded-xl text-xs font-bold text-center border transition-all bg-rose-500/15 border-rose-500/40 text-rose-300";
+    } else if (type === "owner_capital" && btnOwn) {
+      btnOwn.className = "py-2.5 px-2 rounded-xl text-xs font-bold text-center border transition-all bg-emerald-500/15 border-emerald-500/40 text-emerald-300";
+    } else if (type === "other_income" && btnOth) {
+      btnOth.className = "py-2.5 px-2 rounded-xl text-xs font-bold text-center border transition-all bg-blue-500/15 border-blue-500/40 text-blue-300";
+    }
+
+    const catSelect = document.getElementById("tx-category-select");
+    if (catSelect) {
+      let categories = [];
+      if (type === "expense") {
+        categories = [
+          "Stall Rent / Fee",
+          "Raw Materials / Coffee Beans",
+          "Packaging / Pouches",
+          "Logistics / Travel",
+          "Marketing / Printing",
+          "Equipment / Tools",
+          "Staff Welfare / Food",
+          "Ice & Utilities",
+          "Miscellaneous / Other"
+        ];
+      } else if (type === "owner_capital") {
+        categories = [
+          "Owner Capital / Investment",
+          "Additional Working Capital",
+          "Partner Contribution"
+        ];
+      } else {
+        categories = [
+          "Deposit Refund",
+          "Vendor Rebate / Supplier Return",
+          "Other Non-Sales Receipt"
+        ];
+      }
+      catSelect.innerHTML = categories.map(c => `<option value="${c}">${c}</option>`).join("");
+    }
+  }
+
+  handleSaveTransaction(event) {
+    if (event) event.preventDefault();
+
+    const type = document.getElementById("tx-type-value")?.value || "expense";
+    const amtStr = document.getElementById("tx-amount-input")?.value;
+    const category = document.getElementById("tx-category-select")?.value || "General";
+    const paymentMode = document.getElementById("tx-mode-select")?.value || "cash";
+    const date = document.getElementById("tx-date-input")?.value || new Date().toISOString();
+    const note = (document.getElementById("tx-note-input")?.value || "").trim();
+
+    const amount = parseFloat(amtStr);
+    if (isNaN(amount) || amount <= 0) {
+      this.showToast("Please enter a valid amount greater than ₹0", "error");
+      return;
+    }
+
+    if (!note) {
+      this.showToast("Please enter a short description / note", "error");
+      return;
+    }
+
+    const newTx = {
+      id: "tx-" + Date.now() + "-" + Math.random().toString(36).substr(2, 5),
+      type,
+      category,
+      amount,
+      paymentMode,
+      date,
+      note,
+      recordedBy: this.activeStaff || "Staff",
+      createdAt: new Date().toISOString()
+    };
+
+    if (!Array.isArray(this.balanceTransactions)) {
+      this.balanceTransactions = [];
+    }
+
+    this.balanceTransactions.unshift(newTx);
+    if (window.supabaseSync && window.supabaseSync.isConnected) {
+      window.supabaseSync.saveBusinessTransaction(newTx, this.activeBrandId);
+    }
+    this.saveState();
+    this.renderBalanceSheet();
+    this.closeAddTransactionModal();
+    this.playChime("success");
+
+    const typeWord = type === "expense" ? "Expense" : type === "owner_capital" ? "Owner Capital" : "Receipt";
+    this.showToast(`Recorded ${typeWord} of ₹${amount.toLocaleString("en-IN")} successfully!`);
+  }
+
+  deleteTransaction(id) {
+    const tx = (this.balanceTransactions || []).find(t => t.id === id);
+    if (!tx) return;
+
+    if (!confirm(`Are you sure you want to delete this ${tx.type === "expense" ? "expense" : "transaction"} of ₹${Number(tx.amount).toLocaleString("en-IN")} (${tx.note})?`)) {
+      return;
+    }
+
+    this.balanceTransactions = this.balanceTransactions.filter(t => t.id !== id);
+    if (window.supabaseSync && window.supabaseSync.isConnected) {
+      window.supabaseSync.deleteBusinessTransaction(id);
+    }
+    this.saveState();
+    this.renderBalanceSheet();
+    this.playChime("beep");
+    this.showToast("Transaction deleted successfully", "error");
   }
 
   // --------------------------------------------------------------------------
@@ -1243,6 +1660,7 @@ class StoreLedgerApp {
     this.renderInventoryCards();
     this.renderLedgerList();
     this.renderClosingSummary();
+    this.renderBalanceSheet();
 
     // Show thermal receipt
     this.openReceiptModal(newBill);
@@ -1796,6 +2214,7 @@ class StoreLedgerApp {
     this.renderInventoryCards();
     this.renderLedgerList();
     this.renderClosingSummary();
+    this.renderBalanceSheet();
     this.playChime("success");
     this.showToast(`Sold ${qty}× ${prod.name} for ₹${totalRevenue}! Bill ${newBill.billNumber}`);
     this.openReceiptModal(newBill);
@@ -2828,6 +3247,7 @@ class StoreLedgerApp {
       this.renderInventoryTable();
       this.renderLedgerList();
       this.renderClosingSummary();
+      this.renderBalanceSheet();
       this.playChime("beep");
       alert(`Transaction ${bill.billNumber} voided. Stock returned.`);
     }
@@ -3111,7 +3531,9 @@ class StoreLedgerApp {
       brands: this.brands,
       products: this.products,
       bills: this.bills,
-      staffList: this.staffList
+      staffList: this.staffList,
+      startingCapital: this.startingCapital,
+      balanceTransactions: this.balanceTransactions
     };
 
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
@@ -3135,6 +3557,8 @@ class StoreLedgerApp {
           this.bills = parsed.bills;
           if (parsed.brands) this.brands = parsed.brands;
           if (parsed.staffList) this.staffList = parsed.staffList;
+          if (parsed.startingCapital !== undefined) this.startingCapital = Number(parsed.startingCapital);
+          if (Array.isArray(parsed.balanceTransactions)) this.balanceTransactions = parsed.balanceTransactions;
           this.saveState();
           this.init();
           this.playChime("success");
@@ -3153,6 +3577,8 @@ class StoreLedgerApp {
     if (confirm("Reset catalog and reload full demo data? Current changes will be overwritten.")) {
       this.products = JSON.parse(JSON.stringify(DEFAULT_SAMPLE_PRODUCTS));
       this.bills = JSON.parse(JSON.stringify(DEFAULT_SAMPLE_BILLS));
+      this.startingCapital = 25000;
+      this.balanceTransactions = [];
       this.saveState();
       this.init();
       this.closeBrandSettingsModal();
@@ -3257,6 +3683,7 @@ class StoreLedgerApp {
       this.renderInventoryTable();
       this.renderLedgerList();
       this.renderClosingSummary();
+      this.renderBalanceSheet();
       console.log("Supabase sync complete.");
     } catch (e) {
       console.warn("Supabase pull error:", e);

@@ -100,8 +100,22 @@ create table if not exists public.cash_drawers (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- 8. Business Balance Sheet & Non-Sales Transactions
+create table if not exists public.business_transactions (
+  id text primary key,
+  brand_id text references public.brands(id) on delete cascade,
+  type text not null, -- 'expense', 'owner_capital', 'other_income'
+  category text not null,
+  amount numeric(10, 2) not null default 0,
+  payment_mode text not null default 'cash',
+  date timestamp with time zone default timezone('utc'::text, now()) not null,
+  note text,
+  recorded_by text default 'Staff',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 -- ============================================================================
--- 8. ROW LEVEL SECURITY (RLS) POLICIES
+-- 9. ROW LEVEL SECURITY (RLS) POLICIES
 -- ============================================================================
 alter table public.brands enable row level security;
 alter table public.staff enable row level security;
@@ -109,6 +123,7 @@ alter table public.products enable row level security;
 alter table public.bills enable row level security;
 alter table public.stock_adjustments enable row level security;
 alter table public.cash_drawers enable row level security;
+alter table public.business_transactions enable row level security;
 
 -- Allow anon public read and write (for POS kiosks & browser clients with anon key)
 create policy "Allow all operations for anon" on public.brands for all using (true) with check (true);
@@ -117,15 +132,17 @@ create policy "Allow all operations for anon" on public.products for all using (
 create policy "Allow all operations for anon" on public.bills for all using (true) with check (true);
 create policy "Allow all operations for anon" on public.stock_adjustments for all using (true) with check (true);
 create policy "Allow all operations for anon" on public.cash_drawers for all using (true) with check (true);
+create policy "Allow all operations for anon" on public.business_transactions for all using (true) with check (true);
 
 -- ============================================================================
--- 9. REALTIME PUBLICATION
+-- 10. REALTIME PUBLICATION
 -- Enables live sync between cashiers, iPads, and phones
 -- ============================================================================
 alter publication supabase_realtime add table public.products;
 alter publication supabase_realtime add table public.bills;
 alter publication supabase_realtime add table public.brands;
 alter publication supabase_realtime add table public.stock_adjustments;
+alter publication supabase_realtime add table public.business_transactions;
 
 -- ============================================================================
 -- 10. INITIAL SEED DATA (CRANKY PANDA COFFEE)
