@@ -2574,7 +2574,11 @@ class StoreLedgerApp {
   }
 
   openCartDrawer() {
-    this.renderCartDrawerItems();
+    try {
+      this.renderCartDrawerItems();
+    } catch (err) {
+      console.error("Error in renderCartDrawerItems:", err);
+    }
     const modal = document.getElementById("modal-cart");
     if (modal) modal.classList.remove("hidden");
   }
@@ -2658,6 +2662,51 @@ class StoreLedgerApp {
     // If UPI selected, render dynamic QR
     if (this.checkoutPaymentMethod === "upi") {
       this.generateCheckoutUpiQr(total);
+    }
+  }
+
+  calculateChange() {
+    const total = this.cart.reduce((sum, i) => sum + i.quantity * i.soldPrice, 0);
+    const cashInput = document.getElementById("checkout-cash-tendered");
+    const changeEl = document.getElementById("checkout-cash-change");
+    if (!cashInput || !changeEl) return;
+
+    const tendered = Number(cashInput.value) || 0;
+    const change = Math.max(0, tendered - total);
+    changeEl.textContent = `₹${change.toLocaleString('en-IN')}`;
+    changeEl.className = tendered >= total
+      ? "font-mono font-black text-emerald-400"
+      : "font-mono font-black text-amber-400";
+  }
+
+  generateCheckoutUpiQr(amount) {
+    const brand = this.getActiveBrand();
+    const qrContainer = document.getElementById("checkout-upi-qr-box");
+    const vpaLabel = document.getElementById("checkout-upi-vpa-label");
+    if (!qrContainer) return;
+
+    const vpa = (brand.upiVpa || "crankypanda@upi").trim();
+    if (vpaLabel) vpaLabel.textContent = vpa;
+
+    qrContainer.innerHTML = "";
+    const cleanAmt = Math.max(0, Number(amount) || 0);
+    const upiUri = `upi://pay?pa=${encodeURIComponent(vpa)}&pn=${encodeURIComponent(brand.name || 'Cranky Panda')}&am=${cleanAmt}&cu=INR`;
+
+    try {
+      if (typeof window.QRCode !== "undefined") {
+        new window.QRCode(qrContainer, {
+          text: upiUri,
+          width: 130,
+          height: 130,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: window.QRCode.CorrectLevel.M
+        });
+      } else {
+        qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(upiUri)}" alt="UPI QR" class="w-full h-full object-contain" />`;
+      }
+    } catch (e) {
+      qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(upiUri)}" alt="UPI QR" class="w-full h-full object-contain" />`;
     }
   }
 
