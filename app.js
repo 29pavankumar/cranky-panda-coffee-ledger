@@ -35,6 +35,109 @@ const DEFAULT_STAFF = [
   { id: "staff-1", name: "Pavan Kumar M", role: "STAFF" }
 ];
 
+// Initial Business Tracker Transactions (Matching Cranky Panda Ledger Sheet)
+const DEFAULT_BALANCE_TRANSACTIONS = [
+  {
+    id: "tx-20261031-01",
+    type: "expense",
+    category: "Stickers",
+    amount: 1180,
+    paymentMode: "upi",
+    date: "2026-10-31T10:00:00.000Z",
+    note: "Stickers",
+    recordedBy: "Pavan Kumar M",
+    createdAt: "2026-10-31T10:00:00.000Z"
+  },
+  {
+    id: "tx-20261030-01",
+    type: "expense",
+    category: "Goods bought",
+    amount: 9000,
+    paymentMode: "upi",
+    date: "2026-10-30T10:00:00.000Z",
+    note: "Goods bought",
+    recordedBy: "Pavan Kumar M",
+    createdAt: "2026-10-30T10:00:00.000Z"
+  },
+  {
+    id: "tx-20261029-01",
+    type: "sale",
+    category: "Goods Sold / Pop-up Sale",
+    amount: 10533,
+    paymentMode: "upi",
+    date: "2026-10-29T10:00:00.000Z",
+    note: "Goods sold",
+    recordedBy: "Pavan Kumar M",
+    createdAt: "2026-10-29T10:00:00.000Z"
+  },
+  {
+    id: "tx-20261026-03",
+    type: "expense",
+    category: "Logistics / Travel",
+    amount: 584,
+    paymentMode: "upi",
+    date: "2026-10-26T12:00:00.000Z",
+    note: "Logistics",
+    recordedBy: "Pavan Kumar M",
+    createdAt: "2026-10-26T12:00:00.000Z"
+  },
+  {
+    id: "tx-20261026-02",
+    type: "expense",
+    category: "Stickers",
+    amount: 1381,
+    paymentMode: "upi",
+    date: "2026-10-26T11:00:00.000Z",
+    note: "Stickers",
+    recordedBy: "Pavan Kumar M",
+    createdAt: "2026-10-26T11:00:00.000Z"
+  },
+  {
+    id: "tx-20261026-01",
+    type: "expense",
+    category: "Goods bought",
+    amount: 7620,
+    paymentMode: "upi",
+    date: "2026-10-26T10:00:00.000Z",
+    note: "Goods bought",
+    recordedBy: "Pavan Kumar M",
+    createdAt: "2026-10-26T10:00:00.000Z"
+  },
+  {
+    id: "tx-20261021-01",
+    type: "expense",
+    category: "Sample bought",
+    amount: 1000,
+    paymentMode: "upi",
+    date: "2026-10-21T10:00:00.000Z",
+    note: "Sample bought (Panduranga)",
+    recordedBy: "Pavan Kumar M",
+    createdAt: "2026-10-21T10:00:00.000Z"
+  },
+  {
+    id: "tx-20261019-01",
+    type: "expense",
+    category: "Packaging / Pouches",
+    amount: 5390,
+    paymentMode: "upi",
+    date: "2026-10-19T10:00:00.000Z",
+    note: "Zip pouch",
+    recordedBy: "Pavan Kumar M",
+    createdAt: "2026-10-19T10:00:00.000Z"
+  },
+  {
+    id: "tx-20261011-01",
+    type: "expense",
+    category: "Sample bought",
+    amount: 700,
+    paymentMode: "upi",
+    date: "2026-10-11T10:00:00.000Z",
+    note: "Sample bought (Bhavani cafe)",
+    recordedBy: "Pavan Kumar M",
+    createdAt: "2026-10-11T10:00:00.000Z"
+  }
+];
+
 // ============================================================================
 // 2. MAIN APP OBJECT
 // ============================================================================
@@ -195,7 +298,25 @@ class StoreLedgerApp {
         this.currentTheme = parsed.currentTheme || "cranky-dark";
         this.drawerState = parsed.drawerState || { float: 0, expenses: 0, counted: 0 };
         this.startingCapital = parsed.startingCapital !== undefined ? Number(parsed.startingCapital) : 25000;
-        this.balanceTransactions = Array.isArray(parsed.balanceTransactions) ? parsed.balanceTransactions : [];
+        if (!Array.isArray(parsed.balanceTransactions) || parsed.balanceTransactions.length === 0) {
+          this.balanceTransactions = JSON.parse(JSON.stringify(DEFAULT_BALANCE_TRANSACTIONS));
+          this.saveState();
+        } else {
+          this.balanceTransactions = parsed.balanceTransactions;
+          // Ensure default transactions from sheet are merged if not already recorded
+          let addedAny = false;
+          DEFAULT_BALANCE_TRANSACTIONS.forEach(defTx => {
+            const exists = this.balanceTransactions.some(t => 
+              t.id === defTx.id || 
+              (t.note === defTx.note && Number(t.amount) === Number(defTx.amount))
+            );
+            if (!exists) {
+              this.balanceTransactions.push(defTx);
+              addedAny = true;
+            }
+          });
+          if (addedAny) this.saveState();
+        }
       } else {
         this.brands = DEFAULT_BRANDS;
         this.activeBrandId = "brand-1";
@@ -206,7 +327,7 @@ class StoreLedgerApp {
         this.currentTheme = "cranky-dark";
         this.drawerState = { float: 0, expenses: 0, counted: 0 };
         this.startingCapital = 25000;
-        this.balanceTransactions = [];
+        this.balanceTransactions = JSON.parse(JSON.stringify(DEFAULT_BALANCE_TRANSACTIONS));
         this.saveState();
       }
     } catch (e) {
@@ -218,7 +339,7 @@ class StoreLedgerApp {
       this.staffList = DEFAULT_STAFF;
       this.activeStaff = this.staffList[0].name;
       this.startingCapital = 25000;
-      this.balanceTransactions = [];
+      this.balanceTransactions = JSON.parse(JSON.stringify(DEFAULT_BALANCE_TRANSACTIONS));
     }
   }
 
@@ -438,7 +559,7 @@ class StoreLedgerApp {
       }
     });
 
-    // 3. Compute live sales revenue dynamically from this.bills (active/non-void)
+    // 3. Compute live sales revenue dynamically from this.bills AND direct ledger sales
     let totalSales = 0;
     let cashSales = 0;
     let digitalSales = 0;
@@ -453,6 +574,19 @@ class StoreLedgerApp {
         cashSales += rev;
       } else {
         digitalSales += rev;
+      }
+    });
+
+    (this.balanceTransactions || []).forEach(tx => {
+      if (tx.type === "sale" || tx.type === "sale_received") {
+        const amt = Number(tx.amount) || 0;
+        totalSales += amt;
+        salesCount++;
+        if (tx.paymentMode === "cash") {
+          cashSales += amt;
+        } else {
+          digitalSales += amt;
+        }
       }
     });
 
@@ -588,8 +722,11 @@ class StoreLedgerApp {
       let typeBadge = "";
       let amountFormatted = "";
       if (tx.type === "expense") {
-        typeBadge = `<span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30">💸 Expense Out</span>`;
+        typeBadge = `<span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30">💸 Expense</span>`;
         amountFormatted = `<span class="font-mono font-bold text-rose-400">- ₹${Number(tx.amount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>`;
+      } else if (tx.type === "sale" || tx.type === "sale_received") {
+        typeBadge = `<span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-[#e87a24]/15 text-[#fed7aa] border border-[#e87a24]/30">⚡ Sale received</span>`;
+        amountFormatted = `<span class="font-mono font-bold text-[#e87a24]">+ ₹${Number(tx.amount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>`;
       } else if (tx.type === "owner_capital") {
         typeBadge = `<span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">💼 Owner Capital</span>`;
         amountFormatted = `<span class="font-mono font-bold text-emerald-400">+ ₹${Number(tx.amount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>`;
@@ -683,16 +820,20 @@ class StoreLedgerApp {
     if (typeVal) typeVal.value = type;
 
     const btnExp = document.getElementById("btn-tx-type-expense");
+    const btnSale = document.getElementById("btn-tx-type-sale");
     const btnOwn = document.getElementById("btn-tx-type-owner");
     const btnOth = document.getElementById("btn-tx-type-other");
 
     const inactiveClass = "py-2.5 px-2 rounded-xl text-xs font-bold text-center border transition-all bg-theme-surface border-theme-subtle text-theme-muted hover:text-theme-primary";
     if (btnExp) btnExp.className = inactiveClass;
+    if (btnSale) btnSale.className = inactiveClass;
     if (btnOwn) btnOwn.className = inactiveClass;
     if (btnOth) btnOth.className = inactiveClass;
 
     if (type === "expense" && btnExp) {
       btnExp.className = "py-2.5 px-2 rounded-xl text-xs font-bold text-center border transition-all bg-rose-500/15 border-rose-500/40 text-rose-300";
+    } else if ((type === "sale" || type === "sale_received") && btnSale) {
+      btnSale.className = "py-2.5 px-2 rounded-xl text-xs font-bold text-center border transition-all bg-[#e87a24]/20 border-[#e87a24]/40 text-[#fed7aa]";
     } else if (type === "owner_capital" && btnOwn) {
       btnOwn.className = "py-2.5 px-2 rounded-xl text-xs font-bold text-center border transition-all bg-emerald-500/15 border-emerald-500/40 text-emerald-300";
     } else if (type === "other_income" && btnOth) {
@@ -704,15 +845,26 @@ class StoreLedgerApp {
       let categories = [];
       if (type === "expense") {
         categories = [
-          "Stall Rent / Fee",
           "Raw Materials / Coffee Beans",
           "Packaging / Pouches",
+          "Stickers",
           "Logistics / Travel",
+          "Goods bought",
+          "Sample bought",
+          "Stall Rent / Fee",
           "Marketing / Printing",
           "Equipment / Tools",
           "Staff Welfare / Food",
           "Ice & Utilities",
           "Miscellaneous / Other"
+        ];
+      } else if (type === "sale" || type === "sale_received") {
+        categories = [
+          "Goods Sold / Pop-up Sale",
+          "Coffee Beans / Whole Bag",
+          "Wholesale / External Portal",
+          "Sample Sale",
+          "Miscellaneous Sale"
         ];
       } else if (type === "owner_capital") {
         categories = [
@@ -777,7 +929,7 @@ class StoreLedgerApp {
     this.closeAddTransactionModal();
     this.playChime("success");
 
-    const typeWord = type === "expense" ? "Expense" : type === "owner_capital" ? "Owner Capital" : "Receipt";
+    const typeWord = type === "expense" ? "Expense" : type === "sale" || type === "sale_received" ? "Sale" : type === "owner_capital" ? "Owner Capital" : "Receipt";
     this.showToast(`Recorded ${typeWord} of ₹${amount.toLocaleString("en-IN")} successfully!`);
   }
 
@@ -3578,7 +3730,7 @@ class StoreLedgerApp {
       this.products = JSON.parse(JSON.stringify(DEFAULT_SAMPLE_PRODUCTS));
       this.bills = JSON.parse(JSON.stringify(DEFAULT_SAMPLE_BILLS));
       this.startingCapital = 25000;
-      this.balanceTransactions = [];
+      this.balanceTransactions = JSON.parse(JSON.stringify(DEFAULT_BALANCE_TRANSACTIONS));
       this.saveState();
       this.init();
       this.closeBrandSettingsModal();
