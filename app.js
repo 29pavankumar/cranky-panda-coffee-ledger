@@ -515,46 +515,62 @@ class StoreLedgerApp {
     this.renderInventoryTable();
     this.renderLedgerList();
     this.renderClosingSummary();
-    this.renderApprovalsView();
 
     console.log("Store POS & Inventory Ledger initialized.");
+  }
+
+  toggleProfileDropdown(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const profileDropdown = document.getElementById("profile-dropdown");
+    if (profileDropdown) {
+      profileDropdown.classList.toggle("hidden");
+    }
   }
 
   setupDropdownListeners() {
     // Brand dropdown toggle
     const brandBtn = document.getElementById("brand-menu-btn");
     const brandDropdown = document.getElementById("brand-dropdown");
-    brandBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      brandDropdown.classList.toggle("hidden");
-      this.renderBrandDropdownList();
-    });
+    if (brandBtn && brandDropdown) {
+      brandBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        brandDropdown.classList.toggle("hidden");
+        this.renderBrandDropdownList();
+      });
+    }
 
-    // Theme dropdown toggle
+    // Theme dropdown toggle (if present)
     const themeBtn = document.getElementById("theme-menu-btn");
     const themeDropdown = document.getElementById("theme-dropdown");
-    themeBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      themeDropdown.classList.toggle("hidden");
-    });
+    if (themeBtn && themeDropdown) {
+      themeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        themeDropdown.classList.toggle("hidden");
+      });
+    }
 
     // Profile menu toggle
     const profileBtn = document.getElementById("profile-menu-btn");
     const profileDropdown = document.getElementById("profile-dropdown");
-    profileBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      profileDropdown.classList.toggle("hidden");
-    });
+    if (profileBtn && profileDropdown) {
+      profileBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        profileDropdown.classList.toggle("hidden");
+      });
+    }
 
     // Close on click outside
     document.addEventListener("click", (e) => {
-      if (!brandDropdown.contains(e.target) && !brandBtn.contains(e.target)) {
+      if (brandDropdown && brandBtn && !brandDropdown.contains(e.target) && !brandBtn.contains(e.target)) {
         brandDropdown.classList.add("hidden");
       }
-      if (!themeDropdown.contains(e.target) && !themeBtn.contains(e.target)) {
+      if (themeDropdown && themeBtn && !themeDropdown.contains(e.target) && !themeBtn.contains(e.target)) {
         themeDropdown.classList.add("hidden");
       }
-      if (!profileDropdown.contains(e.target) && !profileBtn.contains(e.target)) {
+      if (profileDropdown && profileBtn && !profileDropdown.contains(e.target) && !profileBtn.contains(e.target)) {
         profileDropdown.classList.add("hidden");
       }
     });
@@ -2559,19 +2575,27 @@ class StoreLedgerApp {
 
   openCartDrawer() {
     this.renderCartDrawerItems();
-    document.getElementById("modal-cart").classList.remove("hidden");
+    const modal = document.getElementById("modal-cart");
+    if (modal) modal.classList.remove("hidden");
   }
 
   closeCartDrawer() {
-    document.getElementById("modal-cart").classList.add("hidden");
+    const modal = document.getElementById("modal-cart");
+    if (modal) modal.classList.add("hidden");
   }
 
   renderCartDrawerItems() {
     const container = document.getElementById("cart-items-container");
     const total = this.cart.reduce((sum, i) => sum + i.quantity * i.soldPrice, 0);
 
-    document.getElementById("checkout-subtotal").textContent = `₹${total}`;
-    document.getElementById("checkout-grand-total").textContent = `₹${total}`;
+    const subtotalEl = document.getElementById("checkout-subtotal");
+    const grandTotalEl = document.getElementById("checkout-grand-total");
+    const btnSubmit = document.getElementById("btn-submit-bill");
+
+    if (subtotalEl) subtotalEl.textContent = `₹${total}`;
+    if (grandTotalEl) grandTotalEl.textContent = `₹${total}`;
+
+    if (!container) return;
 
     if (this.cart.length === 0) {
       container.innerHTML = `
@@ -2581,13 +2605,17 @@ class StoreLedgerApp {
           <div class="text-xs mt-1">Tap "+ Cart" on any product to start a bill.</div>
         </div>
       `;
-      document.getElementById("btn-submit-bill").disabled = true;
-      document.getElementById("btn-submit-bill").classList.add("opacity-50", "pointer-events-none");
+      if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.classList.add("opacity-50", "pointer-events-none");
+      }
       return;
     }
 
-    document.getElementById("btn-submit-bill").disabled = false;
-    document.getElementById("btn-submit-bill").classList.remove("opacity-50", "pointer-events-none");
+    if (btnSubmit) {
+      btnSubmit.disabled = false;
+      btnSubmit.classList.remove("opacity-50", "pointer-events-none");
+    }
 
     container.innerHTML = this.cart.map(item => {
       const photoSrc = item.photo && item.photo.trim() ? item.photo : "assets/logo.jpg";
