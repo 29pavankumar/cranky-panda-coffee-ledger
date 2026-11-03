@@ -35,6 +35,61 @@ const DEFAULT_STAFF = [
   { id: "staff-1", name: "Pavan Kumar M", role: "STAFF" }
 ];
 
+// System Users (Admin & Floor Staff with convenient password/password-less setup)
+const DEFAULT_USERS = [
+  {
+    id: "usr-admin-1",
+    name: "Pavan Kumar M",
+    username: "admin",
+    email: "admin@crankypanda.coffee",
+    role: "admin",
+    password: "123",
+    avatarColor: "#e87a24"
+  },
+  {
+    id: "usr-staff-1",
+    name: "Floor Cashier",
+    username: "cashier",
+    email: "cashier@crankypanda.coffee",
+    role: "staff",
+    password: "123",
+    avatarColor: "#fba758"
+  },
+  {
+    id: "usr-staff-2",
+    name: "Barista Pavan",
+    username: "pavan",
+    email: "pavan@crankypanda.coffee",
+    role: "staff",
+    password: "", // Empty string = 1-click password-less login enabled!
+    avatarColor: "#d6c5b0"
+  }
+];
+
+// Initial Staff Stock Requests (Sockadoodle floor approval workflow)
+const DEFAULT_PENDING_REQUESTS = [
+  {
+    id: "req-1730600000001",
+    productId: "",
+    productName: "Belgium Chocolate Instant Coffee (100g)",
+    productSku: "CP-BEL-100G",
+    productFlavour: "Belgium Chocolate",
+    productPhoto: "assets/logo.jpg",
+    currentStock: 12,
+    requestedStock: 24,
+    difference: 12,
+    type: "add",
+    reason: "Floor restock from car / storage",
+    staffNote: "Brought 12 fresh pouches from car storage box for afternoon rush",
+    requestedBy: "Floor Cashier",
+    requestedAt: "2026-11-03T08:30:00.000Z",
+    status: "pending",
+    reviewedBy: null,
+    reviewedAt: null,
+    adminNote: ""
+  }
+];
+
 // Initial Business Tracker Transactions (Matching Cranky Panda Ledger Sheet)
 const DEFAULT_BALANCE_TRANSACTIONS = [
   {
@@ -216,7 +271,7 @@ class StoreLedgerApp {
     this.storageKey = "cranky_panda_zero_slate_v10";
     this.currentTab = "balance";
     this.currentTheme = "cranky-dark";
-    this.isAdminUnlocked = false;
+    this.isAdminUnlocked = true;
     this.cart = [];
     this.checkoutPaymentMethod = "cash";
     this.selectedInvCategory = "All";
@@ -231,6 +286,15 @@ class StoreLedgerApp {
     this.skuBreakdownFilter = "all";
     this.singleSellProduct = null;
     this.singleSellPaymentMethod = "cash";
+
+    // Portal & User Authentication State
+    this.currentPortal = "admin"; // "admin" | "staff"
+    this.currentUser = DEFAULT_USERS[0];
+    this.usersList = JSON.parse(JSON.stringify(DEFAULT_USERS));
+    this.pendingRequests = JSON.parse(JSON.stringify(DEFAULT_PENDING_REQUESTS));
+    this.approvalTabFilter = "pending";
+    this.staffReqType = "set";
+    this.staffReqProduct = null;
 
     // Balance Sheet & Non-Sales Ledger State
     this.startingCapital = 25000;
@@ -286,6 +350,15 @@ class StoreLedgerApp {
   // --------------------------------------------------------------------------
   loadState() {
     try {
+      // 1. Load active portal and user session from dedicated session keys
+      const savedPortal = localStorage.getItem("cranky_current_portal");
+      if (savedPortal === "staff" || savedPortal === "admin") {
+        this.currentPortal = savedPortal;
+      } else {
+        this.currentPortal = "admin";
+      }
+      this.isAdminUnlocked = this.currentPortal === "admin";
+
       const raw = localStorage.getItem(this.storageKey);
       if (raw) {
         const parsed = JSON.parse(raw);
@@ -298,6 +371,33 @@ class StoreLedgerApp {
         this.currentTheme = parsed.currentTheme || "cranky-dark";
         this.drawerState = parsed.drawerState || { float: 0, expenses: 0, counted: 0 };
         this.startingCapital = parsed.startingCapital !== undefined ? Number(parsed.startingCapital) : 25000;
+        
+        // Load registered users with password settings
+        if (Array.isArray(parsed.usersList) && parsed.usersList.length > 0) {
+          this.usersList = parsed.usersList;
+        } else {
+          this.usersList = JSON.parse(JSON.stringify(DEFAULT_USERS));
+        }
+        // Ensure default admin & staff users are present
+        DEFAULT_USERS.forEach(defU => {
+          if (!this.usersList.some(u => u.username === defU.username || u.email === defU.email)) {
+            this.usersList.push(JSON.parse(JSON.stringify(defU)));
+          }
+        });
+
+        // Load active user session
+        const savedUserId = localStorage.getItem("cranky_current_user_id");
+        this.currentUser = this.usersList.find(u => u.id === savedUserId) || 
+          (this.currentPortal === "admin" ? this.usersList.find(u => u.role === "admin") : this.usersList.find(u => u.role === "staff")) || 
+          this.usersList[0];
+
+        // Load pending staff requests
+        if (Array.isArray(parsed.pendingRequests)) {
+          this.pendingRequests = parsed.pendingRequests;
+        } else {
+          this.pendingRequests = JSON.parse(JSON.stringify(DEFAULT_PENDING_REQUESTS));
+        }
+
         if (!Array.isArray(parsed.balanceTransactions) || parsed.balanceTransactions.length === 0) {
           this.balanceTransactions = JSON.parse(JSON.stringify(DEFAULT_BALANCE_TRANSACTIONS));
           this.saveState();
@@ -327,6 +427,9 @@ class StoreLedgerApp {
         this.currentTheme = "cranky-dark";
         this.drawerState = { float: 0, expenses: 0, counted: 0 };
         this.startingCapital = 25000;
+        this.usersList = JSON.parse(JSON.stringify(DEFAULT_USERS));
+        this.currentUser = this.usersList[0];
+        this.pendingRequests = JSON.parse(JSON.stringify(DEFAULT_PENDING_REQUESTS));
         this.balanceTransactions = JSON.parse(JSON.stringify(DEFAULT_BALANCE_TRANSACTIONS));
         this.saveState();
       }
@@ -339,6 +442,9 @@ class StoreLedgerApp {
       this.staffList = DEFAULT_STAFF;
       this.activeStaff = this.staffList[0].name;
       this.startingCapital = 25000;
+      this.usersList = JSON.parse(JSON.stringify(DEFAULT_USERS));
+      this.currentUser = this.usersList[0];
+      this.pendingRequests = JSON.parse(JSON.stringify(DEFAULT_PENDING_REQUESTS));
       this.balanceTransactions = JSON.parse(JSON.stringify(DEFAULT_BALANCE_TRANSACTIONS));
     }
   }
@@ -355,9 +461,13 @@ class StoreLedgerApp {
         currentTheme: this.currentTheme,
         drawerState: this.drawerState,
         startingCapital: this.startingCapital,
-        balanceTransactions: this.balanceTransactions
+        balanceTransactions: this.balanceTransactions,
+        usersList: this.usersList,
+        pendingRequests: this.pendingRequests
       };
       localStorage.setItem(this.storageKey, JSON.stringify(payload));
+      localStorage.setItem("cranky_current_portal", this.currentPortal);
+      localStorage.setItem("cranky_current_user_id", this.currentUser ? this.currentUser.id : "");
     } catch (e) {
       console.error("Error saving state:", e);
     }
@@ -377,14 +487,17 @@ class StoreLedgerApp {
     // Render Brand Identity
     this.updateBrandHeader();
 
-    // Render Navigation
-    this.switchTab(this.currentTab);
-
     // Setup global listeners (click outside dropdowns)
     this.setupDropdownListeners();
 
     // Wire up Supabase Cloud Sync & Realtime
     this.initSupabaseSync();
+
+    // Update Portal UI Mode (Admin vs Staff)
+    this.updatePortalUI();
+
+    // Render Navigation
+    this.switchTab(this.currentTab);
 
     // Render Views
     this.renderBalanceSheet();
@@ -392,6 +505,7 @@ class StoreLedgerApp {
     this.renderInventoryTable();
     this.renderLedgerList();
     this.renderClosingSummary();
+    this.renderApprovalsView();
 
     console.log("Store POS & Inventory Ledger initialized.");
   }
@@ -476,10 +590,16 @@ class StoreLedgerApp {
   // TAB NAVIGATION
   // --------------------------------------------------------------------------
   switchTab(tabId) {
+    // Guard: Staff portal cannot view admin-restricted tabs
+    if (this.currentPortal === "staff" && (tabId === "balance" || tabId === "approvals")) {
+      this.showToast("🔒 Restricted: This tab requires Admin Portal access.");
+      tabId = "pos";
+    }
+
     this.currentTab = tabId;
 
     // View sections
-    const views = ["balance", "pos", "inventory", "ledger", "closing"];
+    const views = ["balance", "pos", "inventory", "ledger", "closing", "approvals"];
     views.forEach(v => {
       const el = document.getElementById(`view-${v}`);
       if (el) {
@@ -505,9 +625,9 @@ class StoreLedgerApp {
       const mobBtn = document.getElementById(`mob-tab-${v}`);
       if (mobBtn) {
         if (v === tabId) {
-          mobBtn.className = "flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all text-theme-accent font-bold scale-105";
+          mobBtn.className = "flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all text-theme-accent font-bold scale-105";
         } else {
-          mobBtn.className = "flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all text-theme-muted hover:text-theme-primary";
+          mobBtn.className = "flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all text-theme-muted hover:text-theme-primary";
         }
       }
     });
@@ -516,6 +636,7 @@ class StoreLedgerApp {
     if (tabId === "balance") this.renderBalanceSheet();
     if (tabId === "pos") this.renderPosCatalog();
     if (tabId === "inventory") this.renderInventoryTable();
+    if (tabId === "approvals") this.renderApprovalsView();
     if (tabId === "ledger") this.renderLedgerList();
     if (tabId === "closing") this.renderClosingSummary();
   }
@@ -1064,72 +1185,924 @@ class StoreLedgerApp {
   }
 
   // --------------------------------------------------------------------------
-  // ADMIN AUTHENTICATION
+  // PORTAL & AUTHENTICATION SYSTEM (ADMIN VS STAFF PORTALS)
   // --------------------------------------------------------------------------
-  handleAdminToggle() {
-    const dropdown = document.getElementById("profile-dropdown");
-    if (dropdown) dropdown.classList.add("hidden");
+  updatePortalUI() {
+    const isAdmin = this.currentPortal === "admin";
+    this.isAdminUnlocked = isAdmin;
 
-    if (this.isAdminUnlocked) {
-      // Lock admin
-      this.isAdminUnlocked = false;
-      this.updateAdminStatusUI();
-      this.renderInventoryTable();
-      this.renderLedgerList();
-      this.playChime("beep");
-    } else {
-      // Prompt for PIN
-      document.getElementById("modal-admin-pin").classList.remove("hidden");
-      document.getElementById("admin-pin-input").value = "";
-      document.getElementById("admin-pin-error").classList.add("hidden");
-      setTimeout(() => document.getElementById("admin-pin-input").focus(), 100);
+    // Header portal pill
+    const badge = document.getElementById("header-portal-badge");
+    const badgeLabel = document.getElementById("header-portal-label");
+    const badgeDot = document.getElementById("header-portal-dot");
+    const switchBtnText = document.getElementById("btn-switch-portal-text");
+
+    if (badgeLabel) {
+      badgeLabel.textContent = isAdmin ? "👑 Admin Portal" : "👤 Staff Portal";
+    }
+    if (badge) {
+      if (isAdmin) {
+        badge.className = "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-black bg-[#e87a24]/15 text-[#e87a24] border border-[#e87a24]/30 shadow-sm cursor-pointer select-none";
+      } else {
+        badge.className = "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-black bg-blue-500/15 text-blue-300 border border-blue-500/30 shadow-sm cursor-pointer select-none";
+      }
+    }
+    if (badgeDot) {
+      badgeDot.className = isAdmin ? "w-2 h-2 rounded-full bg-[#e87a24] animate-pulse" : "w-2 h-2 rounded-full bg-blue-400";
+    }
+    if (switchBtnText) {
+      switchBtnText.textContent = isAdmin ? "Staff View" : "Admin View";
+    }
+
+    // Active user info
+    const u = this.currentUser || (isAdmin ? this.usersList.find(x => x.role === 'admin') : this.usersList.find(x => x.role === 'staff')) || this.usersList[0];
+    const staffNameEl = document.getElementById("active-staff-name");
+    const staffInitialEl = document.getElementById("active-staff-initial");
+    const adminStatusLabel = document.getElementById("admin-status-label");
+    const dropdownUserName = document.getElementById("dropdown-user-name");
+    const dropdownUserRole = document.getElementById("dropdown-user-role");
+
+    if (staffNameEl) staffNameEl.textContent = u.name;
+    if (staffInitialEl) staffInitialEl.textContent = (u.name || "P")[0].toUpperCase();
+    if (adminStatusLabel) {
+      adminStatusLabel.textContent = isAdmin ? "ADMIN" : "STAFF";
+      adminStatusLabel.className = isAdmin 
+        ? "text-[9px] text-[#e87a24] uppercase tracking-wider font-extrabold"
+        : "text-[9px] text-blue-400 uppercase tracking-wider font-extrabold";
+    }
+    if (dropdownUserName) dropdownUserName.textContent = u.name;
+    if (dropdownUserRole) dropdownUserRole.textContent = `Role: ${u.role === 'admin' ? 'Administrator' : 'Floor Staff'} (@${u.username})`;
+
+    // Profile dropdown items
+    const dropSwitchLabel = document.getElementById("dropdown-portal-switch-label");
+    const dropBadge = document.getElementById("dropdown-portal-badge");
+    if (dropSwitchLabel) dropSwitchLabel.textContent = isAdmin ? "Switch to Staff Portal" : "Switch to Admin Portal";
+    if (dropBadge) {
+      dropBadge.textContent = isAdmin ? "Admin Mode" : "Staff Mode";
+      dropBadge.className = isAdmin ? "text-[10px] px-1.5 py-0.5 rounded font-mono bg-[#e87a24]/20 text-[#fed7aa]" : "text-[10px] px-1.5 py-0.5 rounded font-mono bg-blue-500/20 text-blue-300";
+    }
+
+    const dropManageUsers = document.getElementById("dropdown-btn-manage-users");
+    const dropApprovals = document.getElementById("dropdown-btn-approvals");
+    const dropBrandSettings = document.getElementById("dropdown-btn-brand-settings");
+    const dropBackup = document.getElementById("dropdown-btn-backup");
+    const dropStaffRecount = document.getElementById("dropdown-btn-staff-recount");
+
+    if (dropManageUsers) dropManageUsers.classList.toggle("hidden", !isAdmin);
+    if (dropApprovals) dropApprovals.classList.toggle("hidden", !isAdmin);
+    if (dropBrandSettings) dropBrandSettings.classList.toggle("hidden", !isAdmin);
+    if (dropBackup) dropBackup.classList.toggle("hidden", !isAdmin);
+    if (dropStaffRecount) dropStaffRecount.classList.toggle("hidden", isAdmin);
+
+    // Nav tab visibility (Balance Sheet and Approvals are Admin Only)
+    const navBalance = document.getElementById("nav-tab-balance");
+    const mobBalance = document.getElementById("mob-tab-balance");
+    const navApprovals = document.getElementById("nav-tab-approvals");
+    const mobApprovals = document.getElementById("mob-tab-approvals");
+
+    if (navBalance) navBalance.classList.toggle("hidden", !isAdmin);
+    if (mobBalance) mobBalance.classList.toggle("hidden", !isAdmin);
+    if (navApprovals) navApprovals.classList.toggle("hidden", !isAdmin);
+    if (mobApprovals) mobApprovals.classList.toggle("hidden", !isAdmin);
+
+    // Inventory Top Buttons
+    const btnAddSku = document.getElementById("btn-inv-add-sku");
+    const btnRecount = document.getElementById("btn-inv-recount");
+    if (btnAddSku) btnAddSku.classList.toggle("hidden", !isAdmin);
+    if (btnRecount) btnRecount.classList.toggle("hidden", isAdmin);
+
+    // Update Approvals Badges
+    this.updateApprovalsBadge();
+
+    // If in Staff mode and on admin tab, switch to POS Book
+    if (!isAdmin && (this.currentTab === "balance" || this.currentTab === "approvals")) {
+      this.switchTab("pos");
     }
   }
 
+  switchPortal(targetPortal) {
+    const profileDropdown = document.getElementById("profile-dropdown");
+    if (profileDropdown) profileDropdown.classList.add("hidden");
+
+    if (targetPortal === "admin") {
+      // If current user is already admin, switch directly
+      if (this.currentUser && this.currentUser.role === "admin") {
+        this.currentPortal = "admin";
+        this.isAdminUnlocked = true;
+        this.saveState();
+        this.updatePortalUI();
+        this.renderInventoryCards();
+        this.renderLedgerList();
+        this.switchTab("balance");
+        this.showToast("👑 Switched to Admin Portal", "info");
+        this.playChime("success");
+      } else {
+        // Prompt login for Admin
+        this.openLoginModal("admin");
+      }
+    } else {
+      // Switch to Staff Portal
+      this.currentPortal = "staff";
+      this.isAdminUnlocked = false;
+      this.saveState();
+      this.updatePortalUI();
+      this.renderInventoryCards();
+      this.renderLedgerList();
+      this.switchTab("pos");
+      this.showToast("👤 Switched to Staff Floor Portal", "info");
+      this.playChime("beep");
+    }
+  }
+
+  togglePortalSwitch() {
+    const target = this.currentPortal === "admin" ? "staff" : "admin";
+    this.switchPortal(target);
+  }
+
+  openLoginModal(requiredRole = null) {
+    const profileDropdown = document.getElementById("profile-dropdown");
+    if (profileDropdown) profileDropdown.classList.add("hidden");
+
+    const modal = document.getElementById("modal-auth-login");
+    const roleNotice = document.getElementById("login-role-notice");
+    const errorMsg = document.getElementById("login-error-msg");
+    const userInput = document.getElementById("login-user-input");
+    const pwdInput = document.getElementById("login-password-input");
+
+    if (roleNotice) {
+      roleNotice.classList.toggle("hidden", requiredRole !== "admin");
+    }
+    if (errorMsg) errorMsg.classList.add("hidden");
+    if (userInput) userInput.value = "";
+    if (pwdInput) pwdInput.value = "";
+
+    this.renderQuickLoginPresets();
+    if (modal) modal.classList.remove("hidden");
+    setTimeout(() => { if (userInput) userInput.focus(); }, 100);
+  }
+
+  closeLoginModal() {
+    const modal = document.getElementById("modal-auth-login");
+    if (modal) modal.classList.add("hidden");
+  }
+
+  renderQuickLoginPresets() {
+    const container = document.getElementById("login-quick-users-list");
+    if (!container) return;
+
+    container.innerHTML = this.usersList.map(u => {
+      const isPassProtected = !!(u.password && u.password.trim());
+      const roleBadge = u.role === "admin" 
+        ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#e87a24]/20 text-[#fed7aa] shrink-0">👑 Admin</span>`
+        : `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 shrink-0">👤 Staff</span>`;
+      
+      const passNote = isPassProtected 
+        ? `pass: ${this.escapeHtml(u.password)}` 
+        : `🔓 No Password (1-Click Login)`;
+
+      return `
+        <button type="button" onclick="app.quickLogin('${u.id}')" class="w-full p-2.5 rounded-xl bg-theme-surface border border-theme-subtle hover:border-[#e87a24]/50 flex items-center justify-between text-left group transition-all">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-7 h-7 rounded-lg ${u.role === 'admin' ? 'bg-[#e87a24] text-[#0c0a09]' : 'bg-[#221c19] text-[#fed7aa] border border-[#e87a24]/30'} font-black flex items-center justify-center text-xs shrink-0">
+              ${(u.name || "U")[0].toUpperCase()}
+            </div>
+            <div class="truncate">
+              <div class="text-xs font-extrabold text-theme-primary group-hover:text-[#e87a24]">${this.escapeHtml(u.name)}</div>
+              <div class="text-[10px] text-theme-muted">${this.escapeHtml(u.username)} • ${passNote}</div>
+            </div>
+          </div>
+          ${roleBadge}
+        </button>
+      `;
+    }).join('');
+  }
+
+  handleLoginSubmit(e) {
+    e.preventDefault();
+    const loginVal = (document.getElementById("login-user-input")?.value || "").trim().toLowerCase();
+    const passVal = document.getElementById("login-password-input")?.value || "";
+    const errorMsg = document.getElementById("login-error-msg");
+
+    // Search user by username or email
+    const user = this.usersList.find(u => 
+      u.username.toLowerCase() === loginVal || 
+      (u.email && u.email.toLowerCase() === loginVal)
+    );
+
+    if (!user) {
+      if (errorMsg) {
+        errorMsg.textContent = "User not found. Check username or email ID.";
+        errorMsg.classList.remove("hidden");
+      }
+      this.playChime("beep");
+      return;
+    }
+
+    // Check password: if user.password is empty, permit password-less login!
+    const requiresPass = !!(user.password && user.password.trim());
+    if (requiresPass && user.password !== passVal) {
+      if (errorMsg) {
+        errorMsg.textContent = "Incorrect password. Please try again or ask admin to reset.";
+        errorMsg.classList.remove("hidden");
+      }
+      this.playChime("beep");
+      return;
+    }
+
+    // Success login
+    this.currentUser = user;
+    this.activeStaff = user.name;
+    this.currentPortal = user.role === "admin" ? "admin" : "staff";
+    this.isAdminUnlocked = user.role === "admin";
+    this.saveState();
+    this.closeLoginModal();
+    this.updatePortalUI();
+    this.renderInventoryCards();
+    this.renderLedgerList();
+    this.switchTab(this.currentPortal === "admin" ? "balance" : "pos");
+    this.showToast(`Signed in as ${user.name} (${user.role === 'admin' ? 'Admin Portal' : 'Staff Portal'})`, "info");
+    this.playChime("success");
+  }
+
+  quickLogin(userIdOrKey) {
+    let user = this.usersList.find(u => u.id === userIdOrKey || u.username === userIdOrKey);
+    if (!user) {
+      if (userIdOrKey === 'admin') user = this.usersList.find(u => u.role === 'admin');
+      if (userIdOrKey === 'cashier' || userIdOrKey === 'pavan') user = this.usersList.find(u => u.username === userIdOrKey);
+    }
+    if (!user) user = this.usersList[0];
+
+    this.currentUser = user;
+    this.activeStaff = user.name;
+    this.currentPortal = user.role === "admin" ? "admin" : "staff";
+    this.isAdminUnlocked = user.role === "admin";
+    this.saveState();
+    this.closeLoginModal();
+    this.updatePortalUI();
+    this.renderInventoryCards();
+    this.renderLedgerList();
+    this.switchTab(this.currentPortal === "admin" ? "balance" : "pos");
+    this.showToast(`Logged in as ${user.name} (${user.role === 'admin' ? '👑 Admin' : '👤 Staff'})`, "info");
+    this.playChime("success");
+  }
+
+  handleLogout() {
+    const profileDropdown = document.getElementById("profile-dropdown");
+    if (profileDropdown) profileDropdown.classList.add("hidden");
+
+    this.showToast(`Logged out from session.`, "info");
+    this.currentUser = null;
+    this.currentPortal = "staff";
+    this.isAdminUnlocked = false;
+    this.saveState();
+    this.updatePortalUI();
+    this.renderInventoryCards();
+    this.renderLedgerList();
+    this.openLoginModal();
+  }
+
+  togglePasswordVisibility(inputId, btn) {
+    const el = document.getElementById(inputId);
+    if (!el) return;
+    if (el.type === "password") {
+      el.type = "text";
+      if (btn) btn.textContent = "🙈";
+    } else {
+      el.type = "password";
+      if (btn) btn.textContent = "👁️";
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // USER & CREDENTIAL MANAGEMENT MODAL
+  // --------------------------------------------------------------------------
+  openManageUsersModal() {
+    const profileDropdown = document.getElementById("profile-dropdown");
+    if (profileDropdown) profileDropdown.classList.add("hidden");
+
+    this.renderManageUsersList();
+    document.getElementById("modal-manage-users")?.classList.remove("hidden");
+  }
+
+  closeManageUsersModal() {
+    document.getElementById("modal-manage-users")?.classList.add("hidden");
+  }
+
+  renderManageUsersList() {
+    const container = document.getElementById("manage-users-table-container");
+    const countEl = document.getElementById("manage-users-count");
+    if (countEl) countEl.textContent = this.usersList.length;
+    if (!container) return;
+
+    container.innerHTML = this.usersList.map(u => {
+      const isPassProtected = !!(u.password && u.password.trim());
+      const roleBadge = u.role === "admin" 
+        ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#e87a24]/20 text-[#fed7aa]">👑 Admin</span>`
+        : `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300">👤 Floor Staff</span>`;
+
+      const passBadge = isPassProtected
+        ? `<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">🔒 Password: "${this.escapeHtml(u.password)}"</span>`
+        : `<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">🔓 No Password (1-Click Login)</span>`;
+
+      return `
+        <div class="p-3.5 rounded-2xl bg-theme-surface border border-theme-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-xl ${u.role === 'admin' ? 'bg-[#e87a24] text-[#0c0a09]' : 'bg-[#221c19] text-[#fed7aa] border border-[#e87a24]/30'} font-black flex items-center justify-center text-sm shrink-0">
+              ${(u.name || "U")[0].toUpperCase()}
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs font-black text-theme-primary">${this.escapeHtml(u.name)}</span>
+                ${roleBadge}
+                ${passBadge}
+              </div>
+              <div class="text-[11px] text-theme-muted mt-0.5 truncate">
+                username: <strong class="text-theme-secondary font-mono">@${this.escapeHtml(u.username)}</strong>
+                ${u.email ? ` • <span class="text-theme-muted">${this.escapeHtml(u.email)}</span>` : ''}
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
+            ${isPassProtected ? `
+              <button type="button" onclick="app.handleRemoveUserPassword('${u.id}')" class="px-2.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 text-[11px] font-bold transition-all" title="Remove password to enable 1-click password-less login">
+                🔓 Remove Password
+              </button>
+              <button type="button" onclick="app.handleSetUserPassword('${u.id}')" class="px-2.5 py-1.5 rounded-xl bg-theme-elevated border border-theme-subtle hover:border-theme-strong text-[11px] font-bold text-theme-primary transition-all" title="Change password">
+                🔑 Change
+              </button>
+            ` : `
+              <button type="button" onclick="app.handleSetUserPassword('${u.id}')" class="px-2.5 py-1.5 rounded-xl bg-theme-elevated border border-theme-subtle hover:border-theme-strong text-[11px] font-bold text-theme-accent transition-all" title="Set a password for this user">
+                🔑 Set Password
+              </button>
+            `}
+            ${u.id !== 'usr-admin-1' ? `
+              <button type="button" onclick="app.handleDeleteUser('${u.id}')" class="p-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 text-xs transition-all" title="Delete staff account">
+                🗑️
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  handleAddNewUser(e) {
+    e.preventDefault();
+    const name = document.getElementById("new-user-name")?.value.trim();
+    const username = document.getElementById("new-user-username")?.value.trim().toLowerCase();
+    const email = document.getElementById("new-user-email")?.value.trim().toLowerCase();
+    const role = document.getElementById("new-user-role")?.value || "staff";
+    const password = document.getElementById("new-user-password")?.value.trim() || "";
+
+    if (!name || !username) {
+      alert("Name and username are required.");
+      return;
+    }
+
+    if (this.usersList.some(u => u.username.toLowerCase() === username)) {
+      alert(`Username "@${username}" already exists. Choose another username.`);
+      return;
+    }
+
+    const newUser = {
+      id: "usr-" + Date.now(),
+      name: name,
+      username: username,
+      email: email || `${username}@crankypanda.coffee`,
+      role: role,
+      password: password,
+      avatarColor: role === "admin" ? "#e87a24" : "#fba758"
+    };
+
+    this.usersList.push(newUser);
+    this.saveState();
+    this.renderManageUsersList();
+    this.renderQuickLoginPresets();
+    this.showToast(`User ${name} added successfully!`, "info");
+    this.playChime("success");
+
+    // Reset form
+    document.getElementById("add-user-form-body")?.reset();
+    document.getElementById("add-user-form-body")?.classList.add("hidden");
+  }
+
+  handleRemoveUserPassword(userId) {
+    const user = this.usersList.find(u => u.id === userId);
+    if (!user) return;
+
+    if (confirm(`Remove password for ${user.name}? This will allow 1-click password-less login.`)) {
+      user.password = "";
+      this.saveState();
+      this.renderManageUsersList();
+      this.renderQuickLoginPresets();
+      this.showToast(`🔓 Password removed for ${user.name}. 1-click login enabled.`, "info");
+      this.playChime("beep");
+    }
+  }
+
+  handleSetUserPassword(userId) {
+    const user = this.usersList.find(u => u.id === userId);
+    if (!user) return;
+
+    const currentPass = user.password || "";
+    const newPass = prompt(`Set new password for ${user.name} (@${user.username}):\n(Leave blank to remove password completely)`, currentPass);
+    if (newPass === null) return; // Cancelled
+
+    user.password = newPass.trim();
+    this.saveState();
+    this.renderManageUsersList();
+    this.renderQuickLoginPresets();
+    if (user.password) {
+      this.showToast(`Password updated for ${user.name}.`, "info");
+    } else {
+      this.showToast(`Password removed for ${user.name}. 1-click login enabled.`, "info");
+    }
+    this.playChime("success");
+  }
+
+  handleDeleteUser(userId) {
+    const user = this.usersList.find(u => u.id === userId);
+    if (!user) return;
+    if (user.id === "usr-admin-1") {
+      alert("Cannot delete primary store administrator.");
+      return;
+    }
+
+    if (confirm(`Are you sure you want to delete staff account ${user.name} (@${user.username})?`)) {
+      this.usersList = this.usersList.filter(u => u.id !== userId);
+      if (this.currentUser && this.currentUser.id === userId) {
+        this.currentUser = this.usersList[0];
+      }
+      this.saveState();
+      this.renderManageUsersList();
+      this.renderQuickLoginPresets();
+      this.updatePortalUI();
+      this.showToast(`User deleted.`, "info");
+      this.playChime("beep");
+    }
+  }
+
+  exportUsersJson() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.usersList, null, 2));
+    const dlAnchor = document.createElement("a");
+    dlAnchor.setAttribute("href", dataStr);
+    dlAnchor.setAttribute("download", `cranky_panda_users_${Date.now()}.json`);
+    dlAnchor.click();
+    this.showToast("Users exported to JSON file.");
+  }
+
+  handleImportUsersJson(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const imported = JSON.parse(event.target.result);
+        if (Array.isArray(imported) && imported.length > 0) {
+          let count = 0;
+          imported.forEach(impUser => {
+            if (impUser.username) {
+              const existingIdx = this.usersList.findIndex(u => u.username.toLowerCase() === impUser.username.toLowerCase());
+              if (existingIdx >= 0) {
+                this.usersList[existingIdx] = { ...this.usersList[existingIdx], ...impUser };
+              } else {
+                this.usersList.push({
+                  id: impUser.id || ("usr-" + Date.now() + Math.random().toString(36).substring(2, 5)),
+                  name: impUser.name || impUser.username,
+                  username: impUser.username.toLowerCase(),
+                  email: impUser.email || `${impUser.username}@crankypanda.coffee`,
+                  role: impUser.role || "staff",
+                  password: impUser.password !== undefined ? impUser.password : "",
+                  avatarColor: impUser.avatarColor || "#e87a24"
+                });
+              }
+              count++;
+            }
+          });
+          this.saveState();
+          this.renderManageUsersList();
+          this.renderQuickLoginPresets();
+          this.showToast(`Successfully imported ${count} users from JSON!`, "info");
+          this.playChime("success");
+        } else {
+          alert("Invalid users JSON file format. Expected an array of users.");
+        }
+      } catch (err) {
+        alert("Failed to parse JSON file: " + err.message);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  }
+
+  // --------------------------------------------------------------------------
+  // OWN PASSWORD MANAGEMENT MODAL
+  // --------------------------------------------------------------------------
+  openChangePasswordModal() {
+    const profileDropdown = document.getElementById("profile-dropdown");
+    if (profileDropdown) profileDropdown.classList.add("hidden");
+
+    const u = this.currentUser || this.usersList[0];
+    const userLabel = document.getElementById("change-pwd-user-label");
+    if (userLabel) userLabel.textContent = `Logged in as ${u.name} (@${u.username})`;
+    const pwdInput = document.getElementById("new-password-val");
+    if (pwdInput) pwdInput.value = u.password || "";
+
+    document.getElementById("modal-change-password")?.classList.remove("hidden");
+  }
+
+  closeChangePasswordModal() {
+    document.getElementById("modal-change-password")?.classList.add("hidden");
+  }
+
+  handleSaveOwnPassword(e) {
+    e.preventDefault();
+    const u = this.currentUser || this.usersList[0];
+    const newPass = document.getElementById("new-password-val")?.value || "";
+    u.password = newPass.trim();
+
+    // Sync in usersList
+    const target = this.usersList.find(x => x.id === u.id);
+    if (target) target.password = u.password;
+
+    this.saveState();
+    this.closeChangePasswordModal();
+    this.showToast(u.password ? "Password updated successfully!" : "Password removed! 1-click login enabled.", "info");
+    this.playChime("success");
+  }
+
+  handleClearOwnPassword() {
+    const u = this.currentUser || this.usersList[0];
+    u.password = "";
+    const target = this.usersList.find(x => x.id === u.id);
+    if (target) target.password = "";
+
+    this.saveState();
+    this.closeChangePasswordModal();
+    this.showToast("🔓 Password removed! You can now log in without typing a password.", "info");
+    this.playChime("beep");
+  }
+
+  // --------------------------------------------------------------------------
+  // STAFF RECOUNT / RESTOCK REQUEST WORKFLOW (SOCKADOODLE-STYLE APPROVALS)
+  // --------------------------------------------------------------------------
+  openStaffRequestStockModal(productId = null) {
+    const profileDropdown = document.getElementById("profile-dropdown");
+    if (profileDropdown) profileDropdown.classList.add("hidden");
+
+    const prodSelect = document.getElementById("req-product-select");
+    if (prodSelect) {
+      prodSelect.innerHTML = this.products.map(p => `
+        <option value="${p.id}" ${p.id === productId ? 'selected' : ''}>
+          ${this.escapeHtml(p.name)} (${p.sku || 'No SKU'}) • Stock: ${p.stock || 0}
+        </option>
+      `).join('');
+    }
+
+    this.staffReqType = "set";
+    this.setStaffReqType("set");
+    this.handleReqProductChange();
+
+    const noteInput = document.getElementById("staff-req-note-input");
+    if (noteInput) noteInput.value = "";
+    document.getElementById("modal-staff-request-stock")?.classList.remove("hidden");
+  }
+
+  closeStaffRequestStockModal() {
+    document.getElementById("modal-staff-request-stock")?.classList.add("hidden");
+  }
+
+  handleReqProductChange() {
+    const prodId = document.getElementById("req-product-select")?.value;
+    const prod = this.products.find(p => p.id === prodId) || this.products[0];
+    this.staffReqProduct = prod;
+
+    const currentStockEl = document.getElementById("req-current-stock-label");
+    if (currentStockEl) currentStockEl.textContent = prod ? prod.stock : 0;
+    const qtyInput = document.getElementById("staff-req-qty-input");
+    if (qtyInput && prod && this.staffReqType === "set") {
+      qtyInput.value = prod.stock;
+    }
+  }
+
+  setStaffReqType(type) {
+    this.staffReqType = type;
+    const hiddenVal = document.getElementById("staff-req-type-val");
+    if (hiddenVal) hiddenVal.value = type;
+
+    ["set", "add", "reduce"].forEach(t => {
+      const btn = document.getElementById(`btn-req-type-${t}`);
+      if (btn) {
+        if (t === type) {
+          btn.className = "py-2.5 px-2 rounded-xl text-xs font-bold text-center border transition-all bg-[#e87a24]/20 border-[#e87a24]/50 text-[#fed7aa]";
+        } else {
+          btn.className = "py-2.5 px-2 rounded-xl text-xs font-bold text-center border transition-all bg-theme-surface border-theme-subtle text-theme-muted hover:text-theme-primary";
+        }
+      }
+    });
+
+    const label = document.getElementById("staff-req-qty-label");
+    const qtyInput = document.getElementById("staff-req-qty-input");
+    if (label) {
+      if (type === "set") label.textContent = "Actual Physical Count On Floor *";
+      if (type === "add") label.textContent = "Quantity to Restock (+ Units Added) *";
+      if (type === "reduce") label.textContent = "Quantity Damaged / Lost (- Units Deducted) *";
+    }
+    if (qtyInput) {
+      qtyInput.value = type === "set" ? (this.staffReqProduct ? this.staffReqProduct.stock : 0) : 1;
+    }
+  }
+
+  handleSubmitStaffStockRequest(e) {
+    e.preventDefault();
+    const prodId = document.getElementById("req-product-select")?.value;
+    const prod = this.products.find(p => p.id === prodId);
+    if (!prod) {
+      alert("Please select a product.");
+      return;
+    }
+
+    const type = this.staffReqType || "set";
+    const inputVal = parseInt(document.getElementById("staff-req-qty-input")?.value, 10);
+    const reason = document.getElementById("staff-req-reason-select")?.value;
+    const note = document.getElementById("staff-req-note-input")?.value.trim();
+
+    if (isNaN(inputVal) || inputVal < 0) {
+      alert("Please enter a valid count or quantity.");
+      return;
+    }
+
+    const currentStock = prod.stock || 0;
+    let requestedStock = currentStock;
+    let difference = 0;
+
+    if (type === "set") {
+      requestedStock = inputVal;
+      difference = requestedStock - currentStock;
+    } else if (type === "add") {
+      requestedStock = currentStock + inputVal;
+      difference = inputVal;
+    } else if (type === "reduce") {
+      requestedStock = Math.max(0, currentStock - inputVal);
+      difference = -inputVal;
+    }
+
+    const requestObj = {
+      id: "req-" + Date.now(),
+      productId: prod.id,
+      productName: prod.name,
+      productSku: prod.sku || "",
+      productFlavour: prod.flavour || prod.material || "",
+      productPhoto: prod.photo || "assets/logo.jpg",
+      currentStock: currentStock,
+      requestedStock: requestedStock,
+      difference: difference,
+      type: type,
+      reason: reason,
+      staffNote: note,
+      requestedBy: this.currentUser ? this.currentUser.name : (this.activeStaff || "Floor Staff"),
+      requestedAt: new Date().toISOString(),
+      status: "pending",
+      reviewedBy: null,
+      reviewedAt: null,
+      adminNote: ""
+    };
+
+    this.pendingRequests.unshift(requestObj);
+    this.saveState();
+    this.closeStaffRequestStockModal();
+    this.updateApprovalsBadge();
+    this.renderApprovalsView();
+    this.showToast("Stock recount request submitted! Awaiting Admin review.", "info");
+    this.playChime("success");
+  }
+
+  updateApprovalsBadge() {
+    const pendingCount = this.pendingRequests.filter(r => r.status === "pending").length;
+    const navBadge = document.getElementById("nav-approvals-badge");
+    const mobBadge = document.getElementById("mob-approvals-badge");
+    const dropdownCount = document.getElementById("dropdown-approvals-count");
+    const headerPill = document.getElementById("approvals-pending-pill");
+
+    if (navBadge) {
+      navBadge.textContent = pendingCount;
+      navBadge.classList.toggle("hidden", pendingCount === 0);
+    }
+    if (mobBadge) {
+      mobBadge.textContent = pendingCount;
+      mobBadge.classList.toggle("hidden", pendingCount === 0);
+    }
+    if (dropdownCount) {
+      dropdownCount.textContent = pendingCount;
+    }
+    if (headerPill) {
+      headerPill.textContent = `${pendingCount} Pending Request${pendingCount === 1 ? '' : 's'}`;
+    }
+  }
+
+  setApprovalTabFilter(filter) {
+    this.approvalTabFilter = filter;
+    ["pending", "approved", "rejected", "all"].forEach(f => {
+      const btn = document.getElementById(`filter-approvals-${f}`);
+      if (btn) {
+        if (f === filter) {
+          btn.className = "px-3.5 py-1.5 rounded-lg font-bold bg-theme-elevated text-theme-primary transition-all";
+        } else {
+          btn.className = "px-3.5 py-1.5 rounded-lg text-theme-muted hover:text-theme-primary transition-all";
+        }
+      }
+    });
+    this.renderApprovalsView();
+  }
+
+  renderApprovalsView() {
+    const listContainer = document.getElementById("approvals-requests-list");
+    const emptyState = document.getElementById("approvals-empty-state");
+    if (!listContainer) return;
+
+    // Update filter counts
+    const pendingCount = this.pendingRequests.filter(r => r.status === "pending").length;
+    const approvedCount = this.pendingRequests.filter(r => r.status === "approved").length;
+    const rejectedCount = this.pendingRequests.filter(r => r.status === "rejected").length;
+    const totalCount = this.pendingRequests.length;
+
+    const elCountPending = document.getElementById("count-approvals-pending");
+    const elCountApproved = document.getElementById("count-approvals-approved");
+    const elCountRejected = document.getElementById("count-approvals-rejected");
+    const elCountAll = document.getElementById("count-approvals-all");
+
+    if (elCountPending) elCountPending.textContent = pendingCount;
+    if (elCountApproved) elCountApproved.textContent = approvedCount;
+    if (elCountRejected) elCountRejected.textContent = rejectedCount;
+    if (elCountAll) elCountAll.textContent = totalCount;
+
+    this.updateApprovalsBadge();
+
+    // Filter items
+    const filtered = this.pendingRequests.filter(r => {
+      if (this.approvalTabFilter === "pending") return r.status === "pending";
+      if (this.approvalTabFilter === "approved") return r.status === "approved";
+      if (this.approvalTabFilter === "rejected") return r.status === "rejected";
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      listContainer.innerHTML = "";
+      if (emptyState) emptyState.classList.remove("hidden");
+      return;
+    }
+
+    if (emptyState) emptyState.classList.add("hidden");
+
+    listContainer.innerHTML = filtered.map(req => {
+      const isPending = req.status === "pending";
+      const isApproved = req.status === "approved";
+      const isRejected = req.status === "rejected";
+
+      const diffBadge = req.difference > 0
+        ? `<span class="px-2 py-0.5 rounded-md font-mono text-xs font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">+${req.difference} units</span>`
+        : req.difference < 0
+        ? `<span class="px-2 py-0.5 rounded-md font-mono text-xs font-black bg-rose-500/20 text-rose-300 border border-rose-500/30">${req.difference} units</span>`
+        : `<span class="px-2 py-0.5 rounded-md font-mono text-xs font-black bg-zinc-800 text-zinc-300">0 change</span>`;
+
+      const statusPill = isPending
+        ? `<span class="px-2.5 py-1 rounded-xl text-xs font-black bg-[#e87a24]/20 text-[#fed7aa] border border-[#e87a24]/40 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#e87a24] animate-pulse"></span>Pending Approval</span>`
+        : isApproved
+        ? `<span class="px-2.5 py-1 rounded-xl text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">✓ Approved</span>`
+        : `<span class="px-2.5 py-1 rounded-xl text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">✕ Rejected</span>`;
+
+      const reqDate = new Date(req.requestedAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+
+      return `
+        <div class="theme-card p-4 sm:p-5 space-y-3.5 transition-all">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-theme-subtle pb-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-12 h-12 rounded-xl bg-theme-surface border border-theme-subtle overflow-hidden shrink-0">
+                <img src="${req.productPhoto || 'assets/logo.jpg'}" alt="${this.escapeHtml(req.productName)}" class="w-full h-full object-cover" onerror="this.src='assets/logo.jpg'" />
+              </div>
+              <div class="min-w-0">
+                <h4 class="text-sm sm:text-base font-extrabold text-theme-primary truncate">${this.escapeHtml(req.productName)}</h4>
+                <div class="flex items-center gap-2 text-[11px] text-theme-muted mt-0.5">
+                  <span class="font-mono text-[#8d7d70]">${this.escapeHtml(req.productSku || 'SKU')}</span>
+                  ${req.productFlavour ? `<span>• ${this.escapeHtml(req.productFlavour)}</span>` : ''}
+                  <span>• Requested by <strong>${this.escapeHtml(req.requestedBy)}</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 self-start sm:self-center">
+              ${statusPill}
+            </div>
+          </div>
+
+          <!-- Diff Row -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-2xl bg-black/30 border border-theme-subtle text-xs">
+            <div>
+              <span class="text-theme-muted text-[10px] uppercase font-bold tracking-wider block">Current Stock</span>
+              <span class="font-mono font-black text-sm text-theme-primary mt-0.5">${req.currentStock} units</span>
+            </div>
+            <div>
+              <span class="text-[#e87a24] text-[10px] uppercase font-bold tracking-wider block">Requested Stock</span>
+              <div class="flex items-center gap-2 mt-0.5">
+                <span class="font-mono font-black text-sm text-[#fed7aa]">${req.requestedStock} units</span>
+                ${diffBadge}
+              </div>
+            </div>
+            <div>
+              <span class="text-theme-muted text-[10px] uppercase font-bold tracking-wider block">Reason</span>
+              <span class="text-xs font-semibold text-theme-secondary mt-0.5 block truncate">${this.escapeHtml(req.reason)}</span>
+            </div>
+          </div>
+
+          <!-- Staff Note & Review Note -->
+          <div class="space-y-1 text-xs">
+            <div class="p-2.5 rounded-xl bg-theme-surface border border-theme-subtle text-theme-secondary">
+              <span class="font-bold text-[#fed7aa]">Staff Note:</span>
+              <span class="italic text-theme-primary ml-1">"${this.escapeHtml(req.staffNote || 'No details provided.')}"</span>
+              <span class="text-[10px] text-theme-muted block mt-1">${reqDate}</span>
+            </div>
+
+            ${!isPending ? `
+              <div class="text-[11px] text-theme-muted px-1">
+                Reviewed by <strong>${this.escapeHtml(req.reviewedBy || 'Admin')}</strong> on ${new Date(req.reviewedAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Action Buttons (Admin Only & Pending) -->
+          ${isPending && this.currentPortal === 'admin' ? `
+            <div class="pt-2 border-t border-theme-subtle flex items-center justify-end gap-2">
+              <button type="button" onclick="app.handleRejectRequest('${req.id}')" class="px-3.5 py-2 rounded-xl bg-rose-500/10 border border-rose-500/30 hover:bg-rose-500/20 text-rose-300 font-bold text-xs transition-all active:scale-95 flex items-center gap-1.5">
+                <span>✕ Reject Request</span>
+              </button>
+              <button type="button" onclick="app.handleApproveRequest('${req.id}')" class="px-5 py-2 rounded-xl theme-btn-primary font-black text-xs transition-all shadow-md shadow-[#e87a24]/20 active:scale-95 flex items-center gap-1.5">
+                <svg class="w-4 h-4 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                <span>✓ Approve &amp; Update Stock</span>
+              </button>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join('');
+  }
+
+  handleApproveRequest(requestId) {
+    const req = this.pendingRequests.find(r => r.id === requestId);
+    if (!req) return;
+
+    // Find product to update
+    const prod = this.products.find(p => p.id === req.productId || (req.productSku && p.sku === req.productSku) || p.name === req.productName);
+    if (prod) {
+      prod.stock = req.requestedStock;
+      if (window.supabaseSync && window.supabaseSync.isConnected) {
+        window.supabaseSync.saveProduct(prod, this.activeBrandId);
+      }
+    }
+
+    req.status = "approved";
+    req.reviewedBy = this.currentUser ? this.currentUser.name : "Admin";
+    req.reviewedAt = new Date().toISOString();
+
+    this.saveState();
+    this.renderApprovalsView();
+    this.renderInventoryCards();
+    this.renderPosCatalog();
+    this.showToast(`✓ Approved recount for ${req.productName}! Stock set to ${req.requestedStock}.`, "info");
+    this.playChime("success");
+  }
+
+  handleRejectRequest(requestId) {
+    const req = this.pendingRequests.find(r => r.id === requestId);
+    if (!req) return;
+
+    req.status = "rejected";
+    req.reviewedBy = this.currentUser ? this.currentUser.name : "Admin";
+    req.reviewedAt = new Date().toISOString();
+
+    this.saveState();
+    this.renderApprovalsView();
+    this.showToast(`✕ Recount request for ${req.productName} rejected. Stock unchanged.`, "info");
+    this.playChime("beep");
+  }
+
+  // Backward compatibility alias for PIN modal
+  handleAdminToggle() {
+    this.togglePortalSwitch();
+  }
+
   closeAdminPinModal() {
-    document.getElementById("modal-admin-pin").classList.add("hidden");
+    document.getElementById("modal-admin-pin")?.classList.add("hidden");
   }
 
   verifyAdminPin(e) {
     e.preventDefault();
-    const entered = document.getElementById("admin-pin-input").value.trim();
-    const activeBrand = this.getActiveBrand();
-    const correctPin = activeBrand.adminPin || "1234";
-
-    if (entered === correctPin || entered === "1234") {
-      this.isAdminUnlocked = true;
-      this.closeAdminPinModal();
-      this.updateAdminStatusUI();
-      this.renderInventoryTable();
-      this.renderLedgerList();
-      this.playChime("success");
-    } else {
-      document.getElementById("admin-pin-error").classList.remove("hidden");
-      this.playChime("beep");
-    }
+    this.switchPortal("admin");
   }
 
   updateAdminStatusUI() {
-    const statusLabel = document.getElementById("admin-status-label");
-    const actionText = document.getElementById("admin-action-text");
-    const badge = document.getElementById("admin-badge-indicator");
-    const costBadge = document.getElementById("cost-lock-badge");
-
-    if (this.isAdminUnlocked) {
-      statusLabel.textContent = "Admin Active";
-      statusLabel.className = "text-[9px] text-amber-400 uppercase tracking-wider font-extrabold";
-      actionText.textContent = "Lock Admin Session";
-      badge.textContent = "Active";
-      badge.className = "text-[10px] px-1.5 py-0.5 rounded font-mono bg-amber-500/20 text-amber-400 font-bold";
-      if (costBadge) costBadge.textContent = "🔓 Visible";
-    } else {
-      statusLabel.textContent = "Staff Mode";
-      statusLabel.className = "text-[9px] text-theme-muted uppercase tracking-wider font-semibold";
-      actionText.textContent = "Unlock Admin PIN";
-      badge.textContent = "Locked";
-      badge.className = "text-[10px] px-1.5 py-0.5 rounded font-mono bg-zinc-800 text-zinc-400";
-      if (costBadge) costBadge.textContent = "🔒 PIN";
-    }
+    this.updatePortalUI();
   }
 
   // --------------------------------------------------------------------------
@@ -1230,8 +2203,9 @@ class StoreLedgerApp {
     }
 
     // ========================================================================
-    // CONTEXT 2: INVENTORY VIEW (Comprehensive Management)
+    // CONTEXT 2: INVENTORY VIEW (Comprehensive Management vs Floor Staff View)
     // ========================================================================
+    const isAdmin = this.currentPortal === "admin";
     const marginAmt = Math.max(0, salePrice - costPrice);
     const marginPct = salePrice > 0 ? Math.round((marginAmt / salePrice) * 100) : 0;
     const invBorder = inCartQty > 0
@@ -1280,36 +2254,62 @@ class StoreLedgerApp {
             </div>
           </div>
 
-          <!-- 3-Tier Pricing Box (COST | FLOOR | SALE PRICE) -->
-          <div class="grid grid-cols-3 gap-2 mt-3.5 pt-3 border-t border-theme-subtle text-center bg-black/25 rounded-xl p-2.5">
-            <div>
-              <div class="text-[10px] uppercase font-bold text-theme-muted tracking-wider">COST</div>
-              <div class="text-sm font-black font-mono text-theme-primary mt-0.5">₹${costPrice}</div>
+          <!-- Pricing Box: In Admin, shows 3 tiers (COST | FLOOR | SALE). In Staff, hides wholesale COST -->
+          ${isAdmin ? `
+            <div class="grid grid-cols-3 gap-2 mt-3.5 pt-3 border-t border-theme-subtle text-center bg-black/25 rounded-xl p-2.5">
+              <div>
+                <div class="text-[10px] uppercase font-bold text-theme-muted tracking-wider">COST</div>
+                <div class="text-sm font-black font-mono text-theme-primary mt-0.5">₹${costPrice}</div>
+              </div>
+              <div>
+                <div class="text-[10px] uppercase font-bold text-[#d6c5b0] tracking-wider">FLOOR</div>
+                <div class="text-sm font-black font-mono text-theme-primary mt-0.5">₹${floorPrice}</div>
+              </div>
+              <div>
+                <div class="text-[10px] uppercase font-bold text-[#e87a24] tracking-wider">SALE PRICE</div>
+                <div class="text-sm font-black font-mono text-[#e87a24] mt-0.5">₹${salePrice}</div>
+              </div>
             </div>
-            <div>
-              <div class="text-[10px] uppercase font-bold text-[#d6c5b0] tracking-wider">FLOOR</div>
-              <div class="text-sm font-black font-mono text-theme-primary mt-0.5">₹${floorPrice}</div>
-            </div>
-            <div>
-              <div class="text-[10px] uppercase font-bold text-[#e87a24] tracking-wider">SALE PRICE</div>
-              <div class="text-sm font-black font-mono text-[#e87a24] mt-0.5">₹${salePrice}</div>
-            </div>
-          </div>
 
-          <!-- Margin Line -->
-          <div class="flex items-center justify-between text-xs px-1 mt-2.5">
-            <span class="text-theme-muted font-medium text-[11px]">Margin @ Sale:</span>
-            <span class="font-mono font-bold text-[#fed7aa] text-xs">+₹${marginAmt} (${marginPct}%)</span>
-          </div>
+            <!-- Margin Line (Admin Only) -->
+            <div class="flex items-center justify-between text-xs px-1 mt-2.5">
+              <span class="text-theme-muted font-medium text-[11px]">Margin @ Sale:</span>
+              <span class="font-mono font-bold text-[#fed7aa] text-xs">+₹${marginAmt} (${marginPct}%)</span>
+            </div>
+          ` : `
+            <div class="grid grid-cols-2 gap-2 mt-3.5 pt-3 border-t border-theme-subtle text-center bg-black/25 rounded-xl p-2.5">
+              <div>
+                <div class="text-[10px] uppercase font-bold text-[#d6c5b0] tracking-wider">FLOOR MIN</div>
+                <div class="text-sm font-black font-mono text-theme-primary mt-0.5">₹${floorPrice}</div>
+              </div>
+              <div>
+                <div class="text-[10px] uppercase font-bold text-[#e87a24] tracking-wider">SELLING PRICE</div>
+                <div class="text-sm font-black font-mono text-[#e87a24] mt-0.5">₹${salePrice}</div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between text-xs px-1 mt-2.5 text-theme-muted">
+              <span class="text-[11px]">Floor Status:</span>
+              <span class="text-[11px] font-semibold text-[#fed7aa]">Available for billing</span>
+            </div>
+          `}
         </div>
 
         <!-- Action Buttons Row: Stock (+/-), + Cart, ✏️ Edit -->
         <div class="pt-3 border-t border-theme-subtle flex items-center gap-2 mt-3">
-          <!-- Quick Stock Adjust Button -->
-          <button type="button" onclick="app.openStockAdjustmentModal('${p.id}')" class="flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-theme-surface border border-theme-subtle hover:border-theme-strong text-xs font-bold text-theme-secondary hover:text-theme-primary transition-all active:scale-95" title="Adjust or recount physical stock">
-            <svg class="w-3.5 h-3.5 text-theme-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            <span>Stock (+/-)</span>
-          </button>
+          ${isAdmin ? `
+            <!-- Quick Stock Adjust Button (Admin Direct) -->
+            <button type="button" onclick="app.openStockAdjustmentModal('${p.id}')" class="flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-theme-surface border border-theme-subtle hover:border-theme-strong text-xs font-bold text-theme-secondary hover:text-theme-primary transition-all active:scale-95" title="Adjust or recount physical stock">
+              <svg class="w-3.5 h-3.5 text-theme-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span>Stock (+/-)</span>
+            </button>
+          ` : `
+            <!-- Staff Recount / Restock Request Button -->
+            <button type="button" onclick="app.openStaffRequestStockModal('${p.id}')" class="flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-[#e87a24]/15 border border-[#e87a24]/40 hover:bg-[#e87a24]/25 text-xs font-bold text-[#fed7aa] transition-all active:scale-95" title="Request count change or restock approval">
+              <svg class="w-3.5 h-3.5 text-[#e87a24]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span>Request Recount</span>
+            </button>
+          `}
 
           <!-- Add to Cart / Cart Counter Button with inline Stepper -->
           ${inCartQty > 0 ? `
@@ -1325,10 +2325,12 @@ class StoreLedgerApp {
             </button>
           `}
 
-          <!-- Edit Item & Stock Pencil Button -->
-          <button type="button" onclick="app.openEditProductModal('${p.id}')" class="p-2 rounded-xl bg-theme-surface border border-theme-subtle hover:border-theme-strong text-theme-secondary hover:text-theme-primary transition-all active:scale-95" title="Edit Item Details & Current Stock">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-          </button>
+          ${isAdmin ? `
+            <!-- Edit Item & Stock Pencil Button (Admin Only) -->
+            <button type="button" onclick="app.openEditProductModal('${p.id}')" class="p-2 rounded-xl bg-theme-surface border border-theme-subtle hover:border-theme-strong text-theme-secondary hover:text-theme-primary transition-all active:scale-95" title="Edit Item Details & Current Stock">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+            </button>
+          ` : ''}
         </div>
       </div>
     `;
@@ -2038,11 +3040,15 @@ class StoreLedgerApp {
     const elSalesSub = document.getElementById("inv-kpi-sales-sub");
     if (elSalesSub) elSalesSub.textContent = `${todayItems} items • ${todayBills.length} bills`;
 
-    // Update Card 2: Today's Profit
+    // Update Card 2: Today's Profit (Admin Only vs Masked in Staff Portal)
     const elProfit = document.getElementById("inv-kpi-profit");
-    if (elProfit) elProfit.textContent = `+₹${todayProfit.toLocaleString('en-IN')}`;
+    if (elProfit) {
+      elProfit.textContent = this.currentPortal === "admin" ? `+₹${todayProfit.toLocaleString('en-IN')}` : "••••••";
+    }
     const elProfitSub = document.getElementById("inv-kpi-profit-sub");
-    if (elProfitSub) elProfitSub.textContent = `${netMarginPct}% net margin`;
+    if (elProfitSub) {
+      elProfitSub.textContent = this.currentPortal === "admin" ? `${netMarginPct}% net margin` : "Restricted (Admin Only)";
+    }
 
     // Update Card 3: Stall Stock
     const elSkus = document.getElementById("inv-kpi-skus");
