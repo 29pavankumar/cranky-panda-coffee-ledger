@@ -35,7 +35,7 @@ const DEFAULT_STAFF = [
   { id: "staff-1", name: "Pavan Kumar M", role: "STAFF" }
 ];
 
-// System Users (Admin & Floor Staff with convenient password/password-less setup)
+// System Users (Admin & Floor Staff with mandatory password authentication)
 const DEFAULT_USERS = [
   {
     id: "usr-admin-1",
@@ -54,7 +54,7 @@ const DEFAULT_USERS = [
     email: "pavan@crankypanda.coffee",
     role: "staff",
     roleLabel: "Floor Staff / Cashier",
-    password: "", // Empty string = 1-click password-less login enabled!
+    password: "123",
     avatarColor: "#10b981"
   },
   {
@@ -291,8 +291,9 @@ class StoreLedgerApp {
     this.singleSellPaymentMethod = "cash";
 
     // Portal & User Authentication State
-    this.currentPortal = "admin"; // "admin" | "staff"
-    this.currentUser = DEFAULT_USERS[0];
+    this.currentPortal = "staff"; // "admin" | "staff"
+    this.currentUser = null;
+    this.isAdminUnlocked = false;
     this.usersList = JSON.parse(JSON.stringify(DEFAULT_USERS));
     this.pendingRequests = JSON.parse(JSON.stringify(DEFAULT_PENDING_REQUESTS));
     this.approvalTabFilter = "pending";
@@ -353,15 +354,6 @@ class StoreLedgerApp {
   // --------------------------------------------------------------------------
   loadState() {
     try {
-      // 1. Load active portal and user session from dedicated session keys
-      const savedPortal = localStorage.getItem("cranky_current_portal");
-      if (savedPortal === "staff" || savedPortal === "admin") {
-        this.currentPortal = savedPortal;
-      } else {
-        this.currentPortal = "admin";
-      }
-      this.isAdminUnlocked = this.currentPortal === "admin";
-
       const raw = localStorage.getItem(this.storageKey);
       if (raw) {
         const parsed = JSON.parse(raw);
@@ -392,14 +384,31 @@ class StoreLedgerApp {
               existing.name = 'Pavan Kumar M';
             }
             if (!existing.avatarColor) existing.avatarColor = defU.avatarColor;
+            // Ensure every user has a password (mandatory authentication)
+            if (!existing.password || !existing.password.trim()) {
+              existing.password = defU.password || "123";
+            }
           }
         });
 
-        // Load active user session
-        const savedUserId = localStorage.getItem("cranky_current_user_id");
-        this.currentUser = this.usersList.find(u => u.id === savedUserId) || 
-          (this.currentPortal === "admin" ? this.usersList.find(u => u.role === "admin") : this.usersList.find(u => u.role === "staff")) || 
-          this.usersList[0];
+        // Load active user session from dedicated authentication storage
+        const authUserId = sessionStorage.getItem("cranky_auth_session_user_id") || 
+                           localStorage.getItem("cranky_auth_session_user_id");
+
+        if (authUserId) {
+          this.currentUser = this.usersList.find(u => u.id === authUserId) || null;
+        } else {
+          this.currentUser = null;
+        }
+
+        if (this.currentUser) {
+          this.currentPortal = this.currentUser.role === "admin" ? "admin" : "staff";
+          this.isAdminUnlocked = this.currentPortal === "admin";
+          this.activeStaff = this.currentUser.name;
+        } else {
+          this.currentPortal = "staff";
+          this.isAdminUnlocked = false;
+        }
 
         // Load pending staff requests
         if (Array.isArray(parsed.pendingRequests)) {
@@ -438,7 +447,9 @@ class StoreLedgerApp {
         this.drawerState = { float: 0, expenses: 0, counted: 0 };
         this.startingCapital = 25000;
         this.usersList = JSON.parse(JSON.stringify(DEFAULT_USERS));
-        this.currentUser = this.usersList[0];
+        this.currentUser = null;
+        this.currentPortal = "staff";
+        this.isAdminUnlocked = false;
         this.pendingRequests = JSON.parse(JSON.stringify(DEFAULT_PENDING_REQUESTS));
         this.balanceTransactions = JSON.parse(JSON.stringify(DEFAULT_BALANCE_TRANSACTIONS));
         this.saveState();
@@ -453,7 +464,9 @@ class StoreLedgerApp {
       this.activeStaff = this.staffList[0].name;
       this.startingCapital = 25000;
       this.usersList = JSON.parse(JSON.stringify(DEFAULT_USERS));
-      this.currentUser = this.usersList[0];
+      this.currentUser = null;
+      this.currentPortal = "staff";
+      this.isAdminUnlocked = false;
       this.pendingRequests = JSON.parse(JSON.stringify(DEFAULT_PENDING_REQUESTS));
       this.balanceTransactions = JSON.parse(JSON.stringify(DEFAULT_BALANCE_TRANSACTIONS));
     }
@@ -477,7 +490,11 @@ class StoreLedgerApp {
       };
       localStorage.setItem(this.storageKey, JSON.stringify(payload));
       localStorage.setItem("cranky_current_portal", this.currentPortal);
-      localStorage.setItem("cranky_current_user_id", this.currentUser ? this.currentUser.id : "");
+      if (this.currentUser) {
+        localStorage.setItem("cranky_current_user_id", this.currentUser.id);
+      } else {
+        localStorage.removeItem("cranky_current_user_id");
+      }
     } catch (e) {
       console.error("Error saving state:", e);
     }
@@ -500,21 +517,30 @@ class StoreLedgerApp {
     // Setup global listeners (click outside dropdowns)
     this.setupDropdownListeners();
 
-    // Wire up Supabase Cloud Sync & Realtime
-    this.initSupabaseSync();
+    // Setup Auth Gate listeners
+    this.setupAuthGateListeners();
 
-    // Update Portal UI Mode (Admin vs Staff)
-    this.updatePortalUI();
+    // Check if an authenticated user session exists
+    if (!this.currentUser) {
+      this.showAuthGate();
+    } else {
+      this.hideAuthGate();
+      // Wire up Supabase Cloud Sync & Realtime
+      this.initSupabaseSync();
 
-    // Render Navigation
-    this.switchTab(this.currentTab);
+      // Update Portal UI Mode (Admin vs Staff)
+      this.updatePortalUI();
 
-    // Render Views
-    this.renderBalanceSheet();
-    this.renderPosCatalog();
-    this.renderInventoryTable();
-    this.renderLedgerList();
-    this.renderClosingSummary();
+      // Render Navigation
+      this.switchTab(this.currentTab || (this.currentPortal === "admin" ? "balance" : "pos"));
+
+      // Render Views
+      this.renderBalanceSheet();
+      this.renderPosCatalog();
+      this.renderInventoryTable();
+      this.renderLedgerList();
+      this.renderClosingSummary();
+    }
 
     console.log("Store POS & Inventory Ledger initialized.");
   }
@@ -621,6 +647,11 @@ class StoreLedgerApp {
   // TAB NAVIGATION
   // --------------------------------------------------------------------------
   switchTab(tabId) {
+    if (!this.currentUser) {
+      this.showAuthGate();
+      return;
+    }
+
     // Guard: Staff portal cannot view admin-restricted tabs
     if (this.currentPortal === "staff" && tabId === "balance") {
       this.showToast("🔒 Restricted: This tab requires Admin Portal access.");
@@ -1218,12 +1249,13 @@ class StoreLedgerApp {
   // PORTAL & AUTHENTICATION SYSTEM (ADMIN VS STAFF PORTALS)
   // --------------------------------------------------------------------------
   updatePortalUI() {
-    const isAdmin = this.currentPortal === "admin";
+    if (!this.currentUser) return;
+    const isAdmin = this.currentUser.role === "admin";
+    this.currentPortal = isAdmin ? "admin" : "staff";
     this.isAdminUnlocked = isAdmin;
 
     // Active user info
-    const u = this.currentUser || (isAdmin ? this.usersList.find(x => x.role === 'admin') : this.usersList.find(x => x.role === 'staff')) || this.usersList[0];
-    this.currentUser = u;
+    const u = this.currentUser;
     this.activeStaff = u.name;
 
     // Header profile pill button (Sockadoodle style)
@@ -1353,6 +1385,128 @@ class StoreLedgerApp {
     this.switchPortal(target);
   }
 
+  showAuthGate(msg = "") {
+    const gate = document.getElementById("auth-gate-screen");
+    const mainContent = document.getElementById("app-main-content");
+    const errorEl = document.getElementById("gate-error-msg");
+    const errorText = document.getElementById("gate-error-text");
+    const userInp = document.getElementById("gate-user-input");
+    const passInp = document.getElementById("gate-password-input");
+
+    if (gate) gate.classList.remove("hidden");
+    if (mainContent) mainContent.classList.add("hidden");
+
+    if (errorEl) {
+      if (msg) {
+        if (errorText) errorText.textContent = msg;
+        else errorEl.textContent = msg;
+        errorEl.classList.remove("hidden");
+      } else {
+        errorEl.classList.add("hidden");
+      }
+    }
+    if (userInp) {
+      userInp.value = "";
+      setTimeout(() => { if (typeof userInp.focus === 'function') userInp.focus(); }, 150);
+    }
+    if (passInp) passInp.value = "";
+  }
+
+  hideAuthGate() {
+    const gate = document.getElementById("auth-gate-screen");
+    const mainContent = document.getElementById("app-main-content");
+
+    if (gate) gate.classList.add("hidden");
+    if (mainContent) mainContent.classList.remove("hidden");
+  }
+
+  setupAuthGateListeners() {
+    const gateForm = document.getElementById("form-auth-gate");
+    if (gateForm && !gateForm._hasAuthListener) {
+      gateForm._hasAuthListener = true;
+      gateForm.addEventListener("submit", (e) => {
+        this.handleGateLoginSubmit(e);
+      });
+    }
+  }
+
+  authenticateUser(loginVal, passVal) {
+    if (!loginVal || !passVal) {
+      return { success: false, error: "Please enter both User ID and Password." };
+    }
+    const cleanLogin = loginVal.trim().toLowerCase();
+    
+    // Look up user by username or email
+    const user = this.usersList.find(u => 
+      (u.username && u.username.toLowerCase() === cleanLogin) || 
+      (u.email && u.email.toLowerCase() === cleanLogin)
+    );
+
+    if (!user) {
+      return { success: false, error: "User ID or Email not found. Check credentials." };
+    }
+
+    const userPass = (user.password !== undefined && user.password !== null) ? String(user.password) : "";
+    if (userPass !== String(passVal)) {
+      return { success: false, error: "Incorrect password. Please try again." };
+    }
+
+    return { success: true, user };
+  }
+
+  handleGateLoginSubmit(e) {
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    const userInput = (document.getElementById("gate-user-input")?.value || "").trim();
+    const passInput = document.getElementById("gate-password-input")?.value || "";
+    const rememberMe = document.getElementById("gate-remember-me")?.checked;
+    const errorEl = document.getElementById("gate-error-msg");
+    const errorText = document.getElementById("gate-error-text");
+
+    const authRes = this.authenticateUser(userInput, passInput);
+    if (!authRes.success) {
+      if (errorEl) {
+        if (errorText) errorText.textContent = authRes.error;
+        else errorEl.textContent = authRes.error;
+        errorEl.classList.remove("hidden");
+      }
+      this.playChime("beep");
+      return;
+    }
+
+    // Success login
+    const user = authRes.user;
+    this.currentUser = user;
+    this.activeStaff = user.name;
+    this.currentPortal = user.role === "admin" ? "admin" : "staff";
+    this.isAdminUnlocked = user.role === "admin";
+
+    sessionStorage.setItem("cranky_auth_session_user_id", user.id);
+    if (rememberMe) {
+      localStorage.setItem("cranky_auth_session_user_id", user.id);
+    } else {
+      localStorage.removeItem("cranky_auth_session_user_id");
+    }
+
+    this.saveState();
+    this.hideAuthGate();
+
+    // Initialize UI views
+    this.initSupabaseSync();
+    this.updatePortalUI();
+    this.renderInventoryCards();
+    this.renderLedgerList();
+    this.renderBalanceSheet();
+    this.renderPosCatalog();
+    this.renderInventoryTable();
+    this.renderClosingSummary();
+
+    // Default tab based on role
+    this.switchTab(this.currentPortal === "admin" ? "balance" : "pos");
+
+    this.showToast(`Welcome, ${user.name}! Signed in to ${user.role === 'admin' ? '👑 Admin Portal' : '👤 Staff Portal'}.`, "info");
+    this.playChime("success");
+  }
+
   openLoginModal(requiredRole = null) {
     const profileDropdown = document.getElementById("profile-dropdown");
     if (profileDropdown) profileDropdown.classList.add("hidden");
@@ -1380,29 +1534,36 @@ class StoreLedgerApp {
     if (modal) modal.classList.add("hidden");
   }
 
+  selectUserForLogin(username) {
+    const userInput = document.getElementById("login-user-input");
+    const pwdInput = document.getElementById("login-password-input");
+    const errorMsg = document.getElementById("login-error-msg");
+    if (errorMsg) errorMsg.classList.add("hidden");
+    if (userInput) userInput.value = username;
+    if (pwdInput) {
+      pwdInput.value = "";
+      pwdInput.focus();
+    }
+  }
+
   renderQuickLoginPresets() {
     const container = document.getElementById("login-quick-users-list");
     if (!container) return;
 
     container.innerHTML = this.usersList.map(u => {
-      const isPassProtected = !!(u.password && u.password.trim());
       const roleBadge = u.role === "admin" 
         ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#e87a24]/20 text-[#fed7aa] shrink-0">👑 Admin</span>`
         : `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 shrink-0">👤 Staff</span>`;
-      
-      const passNote = isPassProtected 
-        ? `pass: ${this.escapeHtml(u.password)}` 
-        : `🔓 No Password (1-Click Login)`;
 
       return `
-        <button type="button" onclick="app.quickLogin('${u.id}')" class="w-full p-2.5 rounded-xl bg-theme-surface border border-theme-subtle hover:border-[#e87a24]/50 flex items-center justify-between text-left group transition-all">
+        <button type="button" onclick="app.selectUserForLogin('${this.escapeHtml(u.username)}')" class="w-full p-2.5 rounded-xl bg-theme-surface border border-theme-subtle hover:border-[#e87a24]/50 flex items-center justify-between text-left group transition-all">
           <div class="flex items-center gap-2.5 min-w-0">
             <div class="w-7 h-7 rounded-lg ${u.role === 'admin' ? 'bg-[#e87a24] text-[#0c0a09]' : 'bg-[#221c19] text-[#fed7aa] border border-[#e87a24]/30'} font-black flex items-center justify-center text-xs shrink-0">
               ${(u.name || "U")[0].toUpperCase()}
             </div>
             <div class="truncate">
               <div class="text-xs font-extrabold text-theme-primary group-hover:text-[#e87a24]">${this.escapeHtml(u.name)}</div>
-              <div class="text-[10px] text-theme-muted">${this.escapeHtml(u.username)} • ${passNote}</div>
+              <div class="text-[10px] text-theme-muted">${this.escapeHtml(u.username)} • Click to enter password</div>
             </div>
           </div>
           ${roleBadge}
@@ -1412,31 +1573,15 @@ class StoreLedgerApp {
   }
 
   handleLoginSubmit(e) {
-    e.preventDefault();
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
     const loginVal = (document.getElementById("login-user-input")?.value || "").trim().toLowerCase();
     const passVal = document.getElementById("login-password-input")?.value || "";
     const errorMsg = document.getElementById("login-error-msg");
 
-    // Search user by username or email
-    const user = this.usersList.find(u => 
-      u.username.toLowerCase() === loginVal || 
-      (u.email && u.email.toLowerCase() === loginVal)
-    );
-
-    if (!user) {
+    const authRes = this.authenticateUser(loginVal, passVal);
+    if (!authRes.success) {
       if (errorMsg) {
-        errorMsg.textContent = "User not found. Check username or email ID.";
-        errorMsg.classList.remove("hidden");
-      }
-      this.playChime("beep");
-      return;
-    }
-
-    // Check password: if user.password is empty, permit password-less login!
-    const requiresPass = !!(user.password && user.password.trim());
-    if (requiresPass && user.password !== passVal) {
-      if (errorMsg) {
-        errorMsg.textContent = "Incorrect password. Please try again or ask admin to reset.";
+        errorMsg.textContent = authRes.error;
         errorMsg.classList.remove("hidden");
       }
       this.playChime("beep");
@@ -1444,55 +1589,48 @@ class StoreLedgerApp {
     }
 
     // Success login
+    const user = authRes.user;
     this.currentUser = user;
     this.activeStaff = user.name;
     this.currentPortal = user.role === "admin" ? "admin" : "staff";
     this.isAdminUnlocked = user.role === "admin";
+    sessionStorage.setItem("cranky_auth_session_user_id", user.id);
+    localStorage.setItem("cranky_auth_session_user_id", user.id);
     this.saveState();
     this.closeLoginModal();
+    this.hideAuthGate();
     this.updatePortalUI();
     this.renderInventoryCards();
     this.renderLedgerList();
+    this.renderBalanceSheet();
+    this.renderPosCatalog();
+    this.renderInventoryTable();
+    this.renderClosingSummary();
     this.switchTab(this.currentPortal === "admin" ? "balance" : "pos");
     this.showToast(`Signed in as ${user.name} (${user.role === 'admin' ? 'Admin Portal' : 'Staff Portal'})`, "info");
     this.playChime("success");
   }
 
   quickLogin(userIdOrKey) {
-    let user = this.usersList.find(u => u.id === userIdOrKey || u.username === userIdOrKey);
-    if (!user) {
-      if (userIdOrKey === 'admin') user = this.usersList.find(u => u.role === 'admin');
-      if (userIdOrKey === 'cashier' || userIdOrKey === 'pavan') user = this.usersList.find(u => u.username === userIdOrKey);
+    const user = this.usersList.find(u => u.id === userIdOrKey || u.username === userIdOrKey);
+    if (user) {
+      this.selectUserForLogin(user.username);
     }
-    if (!user) user = this.usersList[0];
-
-    this.currentUser = user;
-    this.activeStaff = user.name;
-    this.currentPortal = user.role === "admin" ? "admin" : "staff";
-    this.isAdminUnlocked = user.role === "admin";
-    this.saveState();
-    this.closeLoginModal();
-    this.updatePortalUI();
-    this.renderInventoryCards();
-    this.renderLedgerList();
-    this.switchTab(this.currentPortal === "admin" ? "balance" : "pos");
-    this.showToast(`Logged in as ${user.name} (${user.role === 'admin' ? '👑 Admin' : '👤 Staff'})`, "info");
-    this.playChime("success");
   }
 
   handleLogout() {
     const profileDropdown = document.getElementById("profile-dropdown");
     if (profileDropdown) profileDropdown.classList.add("hidden");
 
-    this.showToast(`Logged out from session.`, "info");
+    sessionStorage.removeItem("cranky_auth_session_user_id");
+    localStorage.removeItem("cranky_auth_session_user_id");
     this.currentUser = null;
     this.currentPortal = "staff";
     this.isAdminUnlocked = false;
     this.saveState();
-    this.updatePortalUI();
-    this.renderInventoryCards();
-    this.renderLedgerList();
-    this.openLoginModal();
+
+    this.showToast("Signed out from session.", "info");
+    this.showAuthGate();
   }
 
   togglePasswordVisibility(inputId, btn) {
@@ -1536,7 +1674,7 @@ class StoreLedgerApp {
 
       const passBadge = isPassProtected
         ? `<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">🔒 Password: "${this.escapeHtml(u.password)}"</span>`
-        : `<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">🔓 No Password (1-Click Login)</span>`;
+        : `<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">⚠️ Temporary: "123"</span>`;
 
       return `
         <div class="p-3.5 rounded-2xl bg-theme-surface border border-theme-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1558,18 +1696,12 @@ class StoreLedgerApp {
           </div>
 
           <div class="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
-            ${isPassProtected ? `
-              <button type="button" onclick="app.handleRemoveUserPassword('${u.id}')" class="px-2.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 text-[11px] font-bold transition-all" title="Remove password to enable 1-click password-less login">
-                🔓 Remove Password
-              </button>
-              <button type="button" onclick="app.handleSetUserPassword('${u.id}')" class="px-2.5 py-1.5 rounded-xl bg-theme-elevated border border-theme-subtle hover:border-theme-strong text-[11px] font-bold text-theme-primary transition-all" title="Change password">
-                🔑 Change
-              </button>
-            ` : `
-              <button type="button" onclick="app.handleSetUserPassword('${u.id}')" class="px-2.5 py-1.5 rounded-xl bg-theme-elevated border border-theme-subtle hover:border-theme-strong text-[11px] font-bold text-theme-accent transition-all" title="Set a password for this user">
-                🔑 Set Password
-              </button>
-            `}
+            <button type="button" onclick="app.handleSetUserPassword('${u.id}')" class="px-2.5 py-1.5 rounded-xl bg-theme-elevated border border-theme-subtle hover:border-theme-strong text-[11px] font-bold text-theme-primary transition-all" title="Change password">
+              🔑 Change Password
+            </button>
+            <button type="button" onclick="app.handleRemoveUserPassword('${u.id}')" class="px-2.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 text-[11px] font-bold transition-all" title="Reset password to default 123">
+              🔄 Reset to 123
+            </button>
             ${u.id !== 'usr-admin-1' ? `
               <button type="button" onclick="app.handleDeleteUser('${u.id}')" class="p-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 text-xs transition-all" title="Delete staff account">
                 🗑️
@@ -1582,12 +1714,12 @@ class StoreLedgerApp {
   }
 
   handleAddNewUser(e) {
-    e.preventDefault();
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
     const name = document.getElementById("new-user-name")?.value.trim();
     const username = document.getElementById("new-user-username")?.value.trim().toLowerCase();
     const email = document.getElementById("new-user-email")?.value.trim().toLowerCase();
     const role = document.getElementById("new-user-role")?.value || "staff";
-    const password = document.getElementById("new-user-password")?.value.trim() || "";
+    const password = (document.getElementById("new-user-password")?.value.trim() || "123");
 
     if (!name || !username) {
       alert("Name and username are required.");
@@ -1625,12 +1757,12 @@ class StoreLedgerApp {
     const user = this.usersList.find(u => u.id === userId);
     if (!user) return;
 
-    if (confirm(`Remove password for ${user.name}? This will allow 1-click password-less login.`)) {
-      user.password = "";
+    if (confirm(`Reset password for ${user.name} to default "123"?`)) {
+      user.password = "123";
       this.saveState();
       this.renderManageUsersList();
       this.renderQuickLoginPresets();
-      this.showToast(`🔓 Password removed for ${user.name}. 1-click login enabled.`, "info");
+      this.showToast(`Password for ${user.name} reset to "123".`, "info");
       this.playChime("beep");
     }
   }
@@ -1639,19 +1771,19 @@ class StoreLedgerApp {
     const user = this.usersList.find(u => u.id === userId);
     if (!user) return;
 
-    const currentPass = user.password || "";
-    const newPass = prompt(`Set new password for ${user.name} (@${user.username}):\n(Leave blank to remove password completely)`, currentPass);
+    const currentPass = user.password || "123";
+    const newPass = prompt(`Set new password for ${user.name} (@${user.username}):`, currentPass);
     if (newPass === null) return; // Cancelled
+    if (!newPass.trim()) {
+      alert("Password cannot be blank.");
+      return;
+    }
 
     user.password = newPass.trim();
     this.saveState();
     this.renderManageUsersList();
     this.renderQuickLoginPresets();
-    if (user.password) {
-      this.showToast(`Password updated for ${user.name}.`, "info");
-    } else {
-      this.showToast(`Password removed for ${user.name}. 1-click login enabled.`, "info");
-    }
+    this.showToast(`Password updated for ${user.name}.`, "info");
     this.playChime("success");
   }
 
@@ -1752,10 +1884,15 @@ class StoreLedgerApp {
   }
 
   handleSaveOwnPassword(e) {
-    e.preventDefault();
-    const u = this.currentUser || this.usersList[0];
-    const newPass = document.getElementById("new-password-val")?.value || "";
-    u.password = newPass.trim();
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    const u = this.currentUser;
+    if (!u) return;
+    const newPass = (document.getElementById("new-password-val")?.value || "").trim();
+    if (!newPass) {
+      this.showToast("Password cannot be blank.", "error");
+      return;
+    }
+    u.password = newPass;
 
     // Sync in usersList
     const target = this.usersList.find(x => x.id === u.id);
@@ -1763,20 +1900,8 @@ class StoreLedgerApp {
 
     this.saveState();
     this.closeChangePasswordModal();
-    this.showToast(u.password ? "Password updated successfully!" : "Password removed! 1-click login enabled.", "info");
+    this.showToast("Password updated successfully!", "info");
     this.playChime("success");
-  }
-
-  handleClearOwnPassword() {
-    const u = this.currentUser || this.usersList[0];
-    u.password = "";
-    const target = this.usersList.find(x => x.id === u.id);
-    if (target) target.password = "";
-
-    this.saveState();
-    this.closeChangePasswordModal();
-    this.showToast("🔓 Password removed! You can now log in without typing a password.", "info");
-    this.playChime("beep");
   }
 
   // --------------------------------------------------------------------------

@@ -42,8 +42,94 @@
 </head>
 <body class="antialiased selection:bg-[#e87a24]/30 selection:text-[#fed7aa]">
   <div id="app" class="min-h-screen flex flex-col">
-    <!-- Top Navigation Header -->
-    <header class="glass-header sticky top-0 z-30 transition-colors">
+    <!-- =================================================================== -->
+    <!-- AUTHENTICATION GATE / LOCK SCREEN (MANDATORY ACCESS)               -->
+    <!-- =================================================================== -->
+    <div id="auth-gate-screen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0c0a09] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#2a170a]/50 via-[#0c0a09] to-[#0c0a09] overflow-y-auto animate-fade-in">
+      <div class="relative w-full max-w-md bg-[#14110f]/95 border border-[#e87a24]/20 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-6">
+        
+        <!-- Brand & Shield Header -->
+        <div class="text-center space-y-3">
+          <div class="inline-flex p-1 rounded-2xl bg-gradient-to-tr from-[#e87a24] to-[#fdf6e7]/40 shadow-xl shadow-[#e87a24]/25">
+            <div class="h-16 w-16 rounded-[14px] bg-[#14110f] overflow-hidden flex items-center justify-center">
+              <img src="assets/logo.jpg" alt="Cranky Panda" class="w-full h-full object-cover" />
+            </div>
+          </div>
+          <div>
+            <h2 class="text-xl font-extrabold text-[#fdf6e7] tracking-tight">Cranky Panda Coffee</h2>
+            <p class="text-xs text-[#a89f91]">Store POS, Cafe Ledger &amp; Management Portal</p>
+          </div>
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e87a24]/10 border border-[#e87a24]/30 text-[#fed7aa] text-[11px] font-bold">
+            <svg class="w-3.5 h-3.5 text-[#e87a24]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            <span>Sign In to Access Portal</span>
+          </div>
+        </div>
+
+        <!-- Error Alert -->
+        <div id="gate-error-msg" class="hidden p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-semibold flex items-center gap-2">
+          <svg class="w-4 h-4 shrink-0 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span id="gate-error-text">Invalid User ID or Password.</span>
+        </div>
+
+        <!-- Auth Form -->
+        <form id="form-auth-gate" onsubmit="app.handleGateLoginSubmit(event)" class="space-y-4 text-xs">
+          <div>
+            <label class="block text-[#d6c5b0] font-bold mb-1.5 text-xs">User ID or Email *</label>
+            <div class="relative">
+              <input id="gate-user-input" required type="text" autocomplete="username" placeholder="e.g. admin or pavan" class="w-full px-4 py-3 rounded-xl bg-[#1c1815] border border-[#2d241e] text-[#fdf6e7] text-sm focus:border-[#e87a24] focus:outline-none transition-all placeholder:text-[#554b42]" />
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="text-[#d6c5b0] font-bold text-xs">Password *</label>
+            </div>
+            <div class="relative">
+              <input id="gate-password-input" required type="password" autocomplete="current-password" placeholder="Enter password" class="w-full px-4 py-3 rounded-xl bg-[#1c1815] border border-[#2d241e] text-[#fdf6e7] text-sm focus:border-[#e87a24] focus:outline-none transition-all placeholder:text-[#554b42] pr-10 font-mono" />
+              <button type="button" onclick="app.togglePasswordVisibility('gate-password-input', this)" class="absolute right-3 top-3 text-[#a89f91] hover:text-[#fdf6e7] text-sm" title="Show/Hide Password">👁️</button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-1">
+            <label class="flex items-center gap-2 text-xs text-[#a89f91] cursor-pointer select-none">
+              <input type="checkbox" id="gate-remember-me" checked class="rounded bg-[#1c1815] border-[#2d241e] text-[#e87a24] focus:ring-0" />
+              <span>Remember this device</span>
+            </label>
+          </div>
+
+          <button type="submit" class="w-full py-3.5 rounded-xl font-black text-sm text-[#0c0a09] bg-gradient-to-r from-[#e87a24] to-[#f59e0b] hover:from-[#f59e0b] hover:to-[#e87a24] shadow-lg shadow-[#e87a24]/25 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2">
+            <span>Sign In to Portal</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </button>
+        </form>
+
+        <!-- Access Reference Hint Box -->
+        <div class="p-3.5 rounded-2xl bg-[#1c1815] border border-[#2d241e] text-left text-xs space-y-2.5">
+          <div class="text-[10px] font-bold text-[#e87a24] uppercase tracking-wider flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>Authorized Accounts</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+            <div class="p-2 rounded-xl bg-[#14110f] border border-white/5 space-y-0.5">
+              <div class="font-extrabold text-[#fdf6e7]">👑 Admin Portal</div>
+              <div class="text-[#a89f91]">User: <code class="text-[#e87a24] font-bold">admin</code></div>
+              <div class="text-[#a89f91]">Pass: <code class="text-[#fdf6e7]">123</code></div>
+            </div>
+            <div class="p-2 rounded-xl bg-[#14110f] border border-white/5 space-y-0.5">
+              <div class="font-extrabold text-[#fdf6e7]">👤 Staff Floor POS</div>
+              <div class="text-[#a89f91]">User: <code class="text-emerald-400 font-bold">pavan</code></div>
+              <div class="text-[#a89f91]">Pass: <code class="text-[#fdf6e7]">123</code></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Main Application Wrapper (visible once authenticated) -->
+    <div id="app-main-content" class="min-h-screen flex flex-col hidden">
+      <!-- Top Navigation Header -->
+      <header class="glass-header sticky top-0 z-30 transition-colors">
       <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16 gap-2 sm:gap-4">
           
@@ -952,12 +1038,7 @@
         <span class="text-[9px]">Closing</span>
       </button>
     </nav>
-
-      <button onclick="app.switchTab('closing')" id="mob-tab-closing" class="flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all text-theme-muted hover:text-theme-primary">
-        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-        <span class="text-[9px]">Closing</span>
-      </button>
-    </nav>
+  </div> <!-- /#app-main-content -->
 
     <!-- Floating Bottom Checkout Bar (3-Color Cranky Panda Palette) -->
     <div id="floating-cart-bar" class="hidden fixed bottom-4 sm:bottom-6 left-3 right-3 sm:left-auto sm:right-6 sm:w-auto max-w-xl z-40 animate-slide-up">
@@ -2379,11 +2460,11 @@
 
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label class="text-theme-muted font-semibold">Password</label>
-              <span class="text-[10px] text-theme-muted">Leave blank if no password is set</span>
+              <label class="text-theme-muted font-semibold">Password *</label>
+              <span class="text-[10px] text-theme-muted">Enter account password</span>
             </div>
             <div class="relative">
-              <input id="login-password-input" type="password" placeholder="Enter password (optional)" autocomplete="current-password" class="w-full px-3.5 py-2.5 rounded-xl bg-theme-input border border-theme-subtle text-theme-primary text-xs sm:text-sm focus:border-theme-active focus:outline-none pr-10" />
+              <input id="login-password-input" required type="password" placeholder="Enter password" autocomplete="current-password" class="w-full px-3.5 py-2.5 rounded-xl bg-theme-input border border-theme-subtle text-theme-primary text-xs sm:text-sm focus:border-theme-active focus:outline-none pr-10" />
               <button type="button" onclick="app.togglePasswordVisibility('login-password-input', this)" class="absolute right-3 top-2.5 text-theme-muted hover:text-theme-primary text-xs" title="Show/Hide Password">👁️</button>
             </div>
           </div>
@@ -2403,16 +2484,16 @@
           </div>
         </form>
 
-        <!-- Convenient Quick 1-Click Login Section -->
+        <!-- Registered Accounts Selector Section -->
         <div class="pt-3 border-t border-theme-subtle">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-[10px] uppercase font-bold tracking-wider text-theme-muted">Quick 1-Click Fast Login</span>
-            <span class="text-[10px] text-[#e87a24]">Store Rush Presets</span>
+            <span class="text-[10px] uppercase font-bold tracking-wider text-theme-muted">Registered Store Accounts</span>
+            <span class="text-[10px] text-[#e87a24]">Click to select</span>
           </div>
 
           <div class="space-y-1.5" id="login-quick-users-list">
             <!-- Dynamically populated or default presets -->
-            <button type="button" onclick="app.quickLogin('admin')" class="w-full p-2.5 rounded-xl bg-theme-surface border border-theme-subtle hover:border-[#e87a24]/50 flex items-center justify-between text-left group transition-all">
+            <button type="button" onclick="app.selectUserForLogin('admin')" class="w-full p-2.5 rounded-xl bg-theme-surface border border-theme-subtle hover:border-[#e87a24]/50 flex items-center justify-between text-left group transition-all">
               <div class="flex items-center gap-2.5 min-w-0">
                 <div class="w-7 h-7 rounded-lg bg-[#e87a24] text-[#0c0a09] font-black flex items-center justify-center text-xs shrink-0">P</div>
                 <div class="truncate">
@@ -2423,7 +2504,18 @@
               <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#e87a24]/20 text-[#fed7aa] shrink-0">👑 Admin</span>
             </button>
 
-            <button type="button" onclick="app.quickLogin('cashier')" class="w-full p-2.5 rounded-xl bg-theme-surface border border-theme-subtle hover:border-[#e87a24]/50 flex items-center justify-between text-left group transition-all">
+            <button type="button" onclick="app.selectUserForLogin('pavan')" class="w-full p-2.5 rounded-xl bg-theme-surface border border-theme-subtle hover:border-[#e87a24]/50 flex items-center justify-between text-left group transition-all">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-7 h-7 rounded-lg bg-[#221c19] text-[#fed7aa] border border-[#e87a24]/30 font-black flex items-center justify-center text-xs shrink-0">P</div>
+                <div class="truncate">
+                  <div class="text-xs font-extrabold text-theme-primary group-hover:text-[#e87a24]">Pavan Kumar M</div>
+                  <div class="text-[10px] text-theme-muted">Staff Floor POS • username: <code>pavan</code> (pass: 123)</div>
+                </div>
+              </div>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 shrink-0">👤 Staff</span>
+            </button>
+
+            <button type="button" onclick="app.selectUserForLogin('cashier')" class="w-full p-2.5 rounded-xl bg-theme-surface border border-theme-subtle hover:border-[#e87a24]/50 flex items-center justify-between text-left group transition-all">
               <div class="flex items-center gap-2.5 min-w-0">
                 <div class="w-7 h-7 rounded-lg bg-[#221c19] text-[#fed7aa] border border-[#e87a24]/30 font-black flex items-center justify-center text-xs shrink-0">C</div>
                 <div class="truncate">
@@ -2432,17 +2524,6 @@
                 </div>
               </div>
               <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 shrink-0">👤 Staff</span>
-            </button>
-
-            <button type="button" onclick="app.quickLogin('pavan')" class="w-full p-2.5 rounded-xl bg-theme-surface border border-theme-subtle hover:border-[#e87a24]/50 flex items-center justify-between text-left group transition-all">
-              <div class="flex items-center gap-2.5 min-w-0">
-                <div class="w-7 h-7 rounded-lg bg-[#221c19] text-[#d6c5b0] border border-theme-subtle font-black flex items-center justify-center text-xs shrink-0">☕</div>
-                <div class="truncate">
-                  <div class="text-xs font-extrabold text-theme-primary group-hover:text-[#e87a24]">Barista Pavan</div>
-                  <div class="text-[10px] text-[#e87a24] font-semibold">🔓 Password Removed (1-Click Password-less)</div>
-                </div>
-              </div>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 shrink-0">⚡ 1-Click</span>
             </button>
           </div>
         </div>
@@ -2462,7 +2543,7 @@
             <h3 class="text-base sm:text-lg font-black text-theme-primary flex items-center gap-2">
               <span>👥 Manage Staff &amp; Passwords</span>
             </h3>
-            <p class="text-[11px] text-theme-muted">Conveniently set, update, or remove passwords with 1 click, or upload users via JSON.</p>
+            <p class="text-[11px] text-theme-muted">Manage staff accounts, credentials, and passwords, or upload users via JSON.</p>
           </div>
 
           <div class="flex items-center gap-2">
@@ -2514,8 +2595,8 @@
                 </select>
               </div>
               <div>
-                <label class="block text-theme-muted font-semibold mb-1">Password (Optional)</label>
-                <input id="new-user-password" type="text" placeholder="Leave blank for 1-click login" class="w-full px-3 py-2 rounded-xl bg-theme-input border border-theme-subtle text-theme-primary focus:border-theme-active focus:outline-none font-mono" />
+                <label class="block text-theme-muted font-semibold mb-1">Password *</label>
+                <input id="new-user-password" required type="text" placeholder="e.g. 123" class="w-full px-3 py-2 rounded-xl bg-theme-input border border-theme-subtle text-theme-primary focus:border-theme-active focus:outline-none font-mono" />
               </div>
             </div>
 
@@ -2531,7 +2612,7 @@
         <div>
           <div class="flex items-center justify-between mb-2">
             <span class="text-xs font-bold uppercase tracking-wider text-theme-muted">Registered Users &amp; Passwords (<span id="manage-users-count">3</span>)</span>
-            <span class="text-[11px] text-theme-muted">Click <strong>Remove Password</strong> to allow 1-click password-less login</span>
+            <span class="text-[11px] text-theme-muted">All accounts require password authentication to sign in</span>
           </div>
 
           <div id="manage-users-table-container" class="space-y-2">
@@ -2658,26 +2739,21 @@
 
         <form id="form-change-password" onsubmit="app.handleSaveOwnPassword(event)" class="space-y-4 text-xs">
           <div>
-            <label class="block text-theme-muted font-semibold mb-1">New Password</label>
+            <label class="block text-theme-muted font-semibold mb-1">New Password *</label>
             <div class="relative">
-              <input id="new-password-val" type="password" placeholder="Enter new password (or leave empty)" class="w-full px-3.5 py-2.5 rounded-xl bg-theme-input border border-theme-subtle text-theme-primary font-mono focus:border-theme-active focus:outline-none pr-10" />
+              <input id="new-password-val" required type="password" placeholder="Enter new password" class="w-full px-3.5 py-2.5 rounded-xl bg-theme-input border border-theme-subtle text-theme-primary font-mono focus:border-theme-active focus:outline-none pr-10" />
               <button type="button" onclick="app.togglePasswordVisibility('new-password-val', this)" class="absolute right-3 top-2.5 text-theme-muted hover:text-theme-primary text-xs">👁️</button>
             </div>
-            <p class="text-[10px] text-theme-muted mt-1">If left blank, password will be removed, allowing 1-click login.</p>
+            <p class="text-[10px] text-theme-muted mt-1">Set a password for your account to sign in securely.</p>
           </div>
 
-          <div class="pt-2 border-t border-theme-subtle flex items-center justify-between gap-2">
-            <button type="button" onclick="app.handleClearOwnPassword()" class="px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-300 font-bold hover:bg-rose-500/20 text-xs">
-              🔓 Remove Password
+          <div class="pt-2 border-t border-theme-subtle flex items-center justify-end gap-2">
+            <button type="button" onclick="app.closeChangePasswordModal()" class="px-3 py-2 rounded-xl bg-theme-surface border border-theme-subtle text-theme-muted hover:text-theme-primary font-bold">
+              Cancel
             </button>
-            <div class="flex gap-2">
-              <button type="button" onclick="app.closeChangePasswordModal()" class="px-3 py-2 rounded-xl bg-theme-surface border border-theme-subtle text-theme-muted hover:text-theme-primary font-bold">
-                Cancel
-              </button>
-              <button type="submit" class="px-4 py-2 rounded-xl theme-btn-primary font-black text-xs">
-                Save Password
-              </button>
-            </div>
+            <button type="submit" class="px-4 py-2 rounded-xl theme-btn-primary font-black text-xs">
+              Save Password
+            </button>
           </div>
         </form>
       </div>
