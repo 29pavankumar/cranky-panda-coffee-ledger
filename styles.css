@@ -3,7 +3,21 @@
    Cranky Panda Coffee: Flavour Infused Instant Coffee Powder
    ========================================================================== */
 
-:root, [data-theme="cranky-dark"] {
+:root {
+  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --color-success: #10b981;
+  --color-success-soft: rgba(16, 185, 129, 0.15);
+  --color-warning: #f59e0b;
+  --color-warning-soft: rgba(245, 158, 11, 0.15);
+  --color-danger: #ef4444;
+  --color-danger-soft: rgba(239, 68, 68, 0.15);
+  --color-info: #0284c7;
+  --color-info-soft: rgba(2, 132, 199, 0.15);
+}
+
+/* 🐼 Theme 1: Cranky Espresso Amber (Dark) */
+[data-theme="cranky-dark"] {
   /* 🐼 Official Cranky Panda 3-Color Palette (Extracted directly from Coffee Pouches) */
   --theme-name: 'cranky-dark';
 
@@ -95,8 +109,8 @@
   --text-inverse: #090a10;
 }
 
-/* ☀️ Theme 4: Nordic Clean Studio (Modern Light Theme) */
-[data-theme="nordic-light"] {
+/* ☀️ Theme 4: Nordic Clean Studio (Modern Light Theme - Default) */
+:root, [data-theme="nordic-light"] {
   --theme-name: 'nordic-light';
   --bg-primary: #f8fafc;
   --bg-surface: #ffffff;

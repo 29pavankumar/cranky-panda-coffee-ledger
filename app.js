@@ -273,7 +273,7 @@ class StoreLedgerApp {
   constructor() {
     this.storageKey = "cranky_panda_zero_slate_v10";
     this.currentTab = "balance";
-    this.currentTheme = "cranky-dark";
+    this.currentTheme = "nordic-light";
     this.isAdminUnlocked = true;
     this.cart = [];
     this.checkoutPaymentMethod = "cash";
@@ -363,7 +363,11 @@ class StoreLedgerApp {
         this.bills = parsed.bills || DEFAULT_SAMPLE_BILLS;
         this.staffList = parsed.staffList || DEFAULT_STAFF;
         this.activeStaff = parsed.activeStaff || this.staffList[0].name;
-        this.currentTheme = parsed.currentTheme || "cranky-dark";
+        this.currentTheme = parsed.currentTheme || "nordic-light";
+        if (!parsed.themeLightDefaultApplied) {
+          this.currentTheme = "nordic-light";
+          this.themeLightDefaultApplied = true;
+        }
         this.drawerState = parsed.drawerState || { float: 0, expenses: 0, counted: 0 };
         this.startingCapital = parsed.startingCapital !== undefined ? Number(parsed.startingCapital) : 25000;
         
@@ -443,7 +447,7 @@ class StoreLedgerApp {
         this.bills = DEFAULT_SAMPLE_BILLS;
         this.staffList = DEFAULT_STAFF;
         this.activeStaff = this.staffList[0].name;
-        this.currentTheme = "cranky-dark";
+        this.currentTheme = "nordic-light";
         this.drawerState = { float: 0, expenses: 0, counted: 0 };
         this.startingCapital = 25000;
         this.usersList = JSON.parse(JSON.stringify(DEFAULT_USERS));
@@ -482,6 +486,7 @@ class StoreLedgerApp {
         staffList: this.staffList,
         activeStaff: this.activeStaff,
         currentTheme: this.currentTheme,
+        themeLightDefaultApplied: true,
         drawerState: this.drawerState,
         startingCapital: this.startingCapital,
         balanceTransactions: this.balanceTransactions,
@@ -624,16 +629,16 @@ class StoreLedgerApp {
     
     // Update theme label and dot
     const labelMap = {
-      "cranky-dark": { name: "Cranky Espresso Amber (Default)", color: "bg-[#e87a24]" },
+      "nordic-light": { name: "Nordic Clean Studio (Default)", color: "bg-indigo-600" },
+      "cranky-dark": { name: "Cranky Espresso Amber (Dark)", color: "bg-[#e87a24]" },
       "cranky-burgundy": { name: "Cranky Burgundy", color: "bg-rose-600" },
       "obsidian-violet": { name: "Obsidian", color: "bg-purple-500" },
       "sapphire": { name: "Sapphire", color: "bg-blue-500" },
       "terracotta": { name: "Terracotta", color: "bg-orange-500" },
-      "sage": { name: "Sage Gold", color: "bg-[#e87a24]" },
-      "nordic-light": { name: "Nordic Light", color: "bg-indigo-600" }
+      "sage": { name: "Sage Gold", color: "bg-[#e87a24]" }
     };
 
-    const cfg = labelMap[themeId] || labelMap["cranky-dark"];
+    const cfg = labelMap[themeId] || labelMap["nordic-light"];
     const labelEl = document.getElementById("current-theme-label");
     const dotEl = document.getElementById("theme-indicator-dot");
     if (labelEl) labelEl.textContent = cfg.name;
