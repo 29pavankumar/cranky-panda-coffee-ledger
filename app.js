@@ -2333,10 +2333,10 @@ class StoreLedgerApp {
             </div>
 
             <!-- Product Title -->
-            <h4 class="text-xs sm:text-sm font-black text-[#fdf6e7] line-clamp-2 leading-snug">
+            <h4 class="text-xs sm:text-sm font-black text-[#fdf6e7] line-clamp-2 leading-snug pos-product-title" style="color: #fdf6e7 !important;">
               ${p.name}
             </h4>
-            ${p.sku ? `<span class="text-[10px] font-mono font-bold text-[#8d7d70] block mt-0.5">${p.sku}</span>` : ''}
+            ${p.sku ? `<span class="text-[10px] font-mono font-bold text-[#a89f91] block mt-0.5">${p.sku}</span>` : ''}
             ${p.canBeFree ? `
               <div class="mt-1">
                 <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#e87a24]/15 text-[#fed7aa] border border-[#e87a24]/30">🎁 Free Goodie</span>
@@ -2349,7 +2349,7 @@ class StoreLedgerApp {
             <!-- Price Row: Amber Sale Price + Muted Cream Floor Price -->
             <div class="flex items-baseline justify-between">
               <span class="text-sm sm:text-base font-black font-mono text-[#e87a24]">₹${salePrice}</span>
-              <span class="text-[10px] font-mono text-[#8d7d70] font-semibold">Floor: ₹${floorPrice}</span>
+              <span class="text-[10px] font-mono text-[#a89f91] font-semibold">Floor: ₹${floorPrice}</span>
             </div>
 
             <!-- Action: If in cart, show [-] N in cart [+] stepper. If not in cart, show "+ Add" and "⚡" -->
