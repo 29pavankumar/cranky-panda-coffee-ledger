@@ -2856,7 +2856,7 @@ class StoreLedgerApp {
       const btn = document.getElementById(`pay-btn-${m}`);
       if (!btn) return;
       if (m === method) {
-        btn.className = "py-2 px-1.5 rounded-xl border text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 border-theme-active bg-[#e87a24]/15 text-[#fdf6e7]";
+        btn.className = "py-2 px-1.5 rounded-xl border text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 border-theme-active bg-[#e87a24]/15 text-theme-primary";
       } else {
         btn.className = "py-2 px-1.5 rounded-xl border text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 border-theme-subtle bg-theme-surface text-theme-muted hover:text-theme-primary";
       }

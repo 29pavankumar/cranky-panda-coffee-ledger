@@ -114,8 +114,8 @@
   --accent-soft: rgba(16, 185, 129, 0.08);
   --accent-text: #065f46;
   --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
   --text-inverse: #ffffff;
   --shadow-card: 0 4px 15px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -2px rgba(0, 0, 0, 0.03);
 }
@@ -167,7 +167,7 @@ code, .font-mono {
 .bg-theme-surface { background-color: var(--bg-surface); }
 .bg-theme-card { background-color: var(--bg-card); }
 .bg-theme-elevated { background-color: var(--bg-elevated); }
-.bg-theme-input { background-color: var(--bg-input); }
+.bg-theme-input { background-color: var(--bg-input); color: var(--text-primary); }
 .border-theme-subtle { border-color: var(--border-subtle); }
 .border-theme-strong { border-color: var(--border-strong); }
 .border-theme-active { border-color: var(--border-active); }
@@ -175,6 +175,51 @@ code, .font-mono {
 .text-theme-secondary { color: var(--text-secondary); }
 .text-theme-muted { color: var(--text-muted); }
 .text-theme-accent { color: var(--accent-primary); }
+
+/* Theme-adaptive Amber / Warm Accents */
+.text-hero-amber { color: #fed7aa; }
+[data-theme="nordic-light"] .text-hero-amber { color: #92400e !important; }
+
+.text-amber-contrast { color: #fed7aa; }
+[data-theme="nordic-light"] .text-amber-contrast { color: #92400e !important; }
+
+/* Light theme readability overrides for dark-palette utility classes */
+[data-theme="nordic-light"] .text-\[\#fdf6e7\] { color: #0f172a !important; }
+[data-theme="nordic-light"] .text-\[\#fed7aa\] { color: #92400e !important; }
+[data-theme="nordic-light"] .text-\[\#d6c5b0\] { color: #475569 !important; }
+[data-theme="nordic-light"] .text-\[\#fba758\] { color: #b45309 !important; }
+[data-theme="nordic-light"] .text-\[\#a89f91\] { color: #475569 !important; }
+[data-theme="nordic-light"] .text-amber-300 { color: #92400e !important; }
+[data-theme="nordic-light"] .text-amber-400 { color: #b45309 !important; }
+[data-theme="nordic-light"] .text-sky-300 { color: #0369a1 !important; }
+[data-theme="nordic-light"] .text-rose-300 { color: #be123c !important; }
+[data-theme="nordic-light"] .text-emerald-300 { color: #047857 !important; }
+[data-theme="nordic-light"] .text-blue-300 { color: #1d4ed8 !important; }
+
+/* Preserve crisp light text inside intentionally dark modals / containers even in light mode */
+.bg-zinc-900 .text-\[\#fed7aa\],
+.bg-zinc-950 .text-\[\#fed7aa\],
+.bg-\[\#121215\] .text-\[\#fed7aa\],
+.bg-\[\#14110f\] .text-\[\#fed7aa\],
+#auth-gate-screen .text-\[\#fed7aa\],
+#profile-dropdown .text-\[\#fed7aa\] {
+  color: #fed7aa !important;
+}
+
+.bg-zinc-900 .text-\[\#fdf6e7\],
+.bg-zinc-950 .text-\[\#fdf6e7\],
+.bg-\[\#121215\] .text-\[\#fdf6e7\],
+.bg-\[\#14110f\] .text-\[\#fdf6e7\],
+#auth-gate-screen .text-\[\#fdf6e7\],
+#profile-dropdown .text-\[\#fdf6e7\] {
+  color: #fdf6e7 !important;
+}
+
+.bg-zinc-900 .text-\[\#d6c5b0\],
+.bg-zinc-950 .text-\[\#d6c5b0\],
+#auth-gate-screen .text-\[\#d6c5b0\] {
+  color: #d6c5b0 !important;
+}
 
 .glass-header {
   background-color: var(--bg-surface);
