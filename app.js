@@ -2403,7 +2403,7 @@ class StoreLedgerApp {
                     ${p.category || 'General'}
                   </span>
                   ${p.flavour || p.material ? `
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#e87a24]/15 text-[#fed7aa] border border-[#e87a24]/30 truncate max-w-[120px]">
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#e87a24]/15 text-amber-contrast border border-[#e87a24]/30 truncate max-w-[120px]">
                       ${p.flavour || p.material}
                     </span>
                   ` : ''}
@@ -2411,9 +2411,9 @@ class StoreLedgerApp {
 
                 <!-- Stock Badge -->
                 <span class="text-[10px] font-mono font-extrabold px-2 py-0.5 rounded-md shrink-0 ${
-                  isOutOfStock ? 'bg-black/50 text-[#8d7d70] border border-[#443831]' :
-                  isLowStock ? 'bg-[#e87a24]/20 text-[#fba758] border border-[#e87a24]/35' :
-                  'bg-[#e87a24]/15 text-[#fed7aa] border border-[#e87a24]/30'
+                  isOutOfStock ? 'bg-rose-500/15 text-rose-500 border border-rose-500/30' :
+                  isLowStock ? 'bg-[#e87a24]/20 text-amber-contrast border border-[#e87a24]/35' :
+                  'bg-[#e87a24]/15 text-amber-contrast border border-[#e87a24]/30'
                 }">
                   ${p.stock || 0} IN STOCK
                 </span>
@@ -2429,13 +2429,13 @@ class StoreLedgerApp {
 
           <!-- Pricing Box: In Admin, shows 3 tiers (COST | FLOOR | SALE). In Staff, hides wholesale COST -->
           ${isAdmin ? `
-            <div class="grid grid-cols-3 gap-2 mt-3.5 pt-3 border-t border-theme-subtle text-center bg-black/25 rounded-xl p-2.5">
+            <div class="grid grid-cols-3 gap-2 mt-3.5 pt-3 border-t border-theme-subtle text-center bg-theme-surface border border-theme-subtle rounded-xl p-2.5">
               <div>
                 <div class="text-[10px] uppercase font-bold text-theme-muted tracking-wider">COST</div>
                 <div class="text-sm font-black font-mono text-theme-primary mt-0.5">₹${costPrice}</div>
               </div>
               <div>
-                <div class="text-[10px] uppercase font-bold text-[#d6c5b0] tracking-wider">FLOOR</div>
+                <div class="text-[10px] uppercase font-bold text-theme-muted tracking-wider">FLOOR</div>
                 <div class="text-sm font-black font-mono text-theme-primary mt-0.5">₹${floorPrice}</div>
               </div>
               <div>
@@ -2447,12 +2447,12 @@ class StoreLedgerApp {
             <!-- Margin Line (Admin Only) -->
             <div class="flex items-center justify-between text-xs px-1 mt-2.5">
               <span class="text-theme-muted font-medium text-[11px]">Margin @ Sale:</span>
-              <span class="font-mono font-bold text-[#fed7aa] text-xs">+₹${marginAmt} (${marginPct}%)</span>
+              <span class="font-mono font-black text-margin-profit text-xs">+₹${marginAmt} (${marginPct}%)</span>
             </div>
           ` : `
-            <div class="grid grid-cols-2 gap-2 mt-3.5 pt-3 border-t border-theme-subtle text-center bg-black/25 rounded-xl p-2.5">
+            <div class="grid grid-cols-2 gap-2 mt-3.5 pt-3 border-t border-theme-subtle text-center bg-theme-surface border border-theme-subtle rounded-xl p-2.5">
               <div>
-                <div class="text-[10px] uppercase font-bold text-[#d6c5b0] tracking-wider">FLOOR MIN</div>
+                <div class="text-[10px] uppercase font-bold text-theme-muted tracking-wider">FLOOR MIN</div>
                 <div class="text-sm font-black font-mono text-theme-primary mt-0.5">₹${floorPrice}</div>
               </div>
               <div>
@@ -2463,7 +2463,7 @@ class StoreLedgerApp {
 
             <div class="flex items-center justify-between text-xs px-1 mt-2.5 text-theme-muted">
               <span class="text-[11px]">Floor Status:</span>
-              <span class="text-[11px] font-semibold text-[#fed7aa]">Available for billing</span>
+              <span class="text-[11px] font-bold text-amber-contrast">Available for billing</span>
             </div>
           `}
         </div>
@@ -2478,7 +2478,7 @@ class StoreLedgerApp {
             </button>
           ` : `
             <!-- Staff Recount / Restock Request Button -->
-            <button type="button" onclick="app.openStaffRequestStockModal('${p.id}')" class="flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-[#e87a24]/15 border border-[#e87a24]/40 hover:bg-[#e87a24]/25 text-xs font-bold text-[#fed7aa] transition-all active:scale-95" title="Request count change or restock approval">
+            <button type="button" onclick="app.openStaffRequestStockModal('${p.id}')" class="flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-[#e87a24]/15 border border-[#e87a24]/40 hover:bg-[#e87a24]/25 text-xs font-bold text-amber-contrast transition-all active:scale-95" title="Request count change or restock approval">
               <svg class="w-3.5 h-3.5 text-[#e87a24]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
               <span>Request Recount</span>
             </button>
@@ -2488,7 +2488,7 @@ class StoreLedgerApp {
           ${inCartQty > 0 ? `
             <div class="flex-1 flex items-center justify-between bg-[#e87a24]/15 border border-[#e87a24]/40 rounded-xl p-0.5">
               <button type="button" onclick="app.updateCartQty('${p.id}', -1)" class="w-7 h-7 rounded-lg bg-[#221c19] text-[#fdf6e7] font-bold hover:bg-[#2b2420] active:scale-90 flex items-center justify-center text-xs">-</button>
-              <span class="font-mono font-bold text-xs px-1 text-[#fed7aa]">${inCartQty} in Cart</span>
+              <span class="font-mono font-black text-xs px-1 text-amber-contrast">${inCartQty} in Cart</span>
               <button type="button" onclick="app.updateCartQty('${p.id}', 1)" class="w-7 h-7 rounded-lg bg-[#e87a24] text-[#0c0a09] font-black hover:bg-[#f28522] active:scale-90 flex items-center justify-center text-xs">+</button>
             </div>
           ` : `
@@ -4555,11 +4555,11 @@ class StoreLedgerApp {
     emptyState.classList.add("hidden");
     container.innerHTML = filtered.map(bill => {
       const methodBadge = {
-        cash: 'bg-[#e87a24]/15 text-[#fed7aa] border-[#e87a24]/30',
-        upi: 'bg-[#221c19] text-[#fdf6e7] border-[#443831]',
+        cash: 'bg-[#e87a24]/15 text-amber-contrast border border-[#e87a24]/30',
+        upi: 'bg-sky-500/15 text-sky-300 border border-sky-500/30',
         razorpay: 'bg-[#e87a24] text-[#0c0a09] font-black shadow-sm',
-        card: 'bg-[#221c19] text-[#d6c5b0] border-[#443831]'
-      }[bill.paymentMethod] || 'bg-zinc-800 text-zinc-300';
+        card: 'bg-purple-500/15 text-purple-300 border border-purple-500/30'
+      }[bill.paymentMethod] || 'bg-theme-surface border border-theme-subtle text-theme-secondary';
 
       return `
         <div class="theme-card p-4 space-y-3">

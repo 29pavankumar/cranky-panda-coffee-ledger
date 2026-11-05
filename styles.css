@@ -183,6 +183,10 @@ code, .font-mono {
 .text-amber-contrast { color: #fed7aa; }
 [data-theme="nordic-light"] .text-amber-contrast { color: #92400e !important; }
 
+/* Profit & Margin Accent */
+.text-margin-profit { color: #fed7aa; }
+[data-theme="nordic-light"] .text-margin-profit { color: #047857 !important; }
+
 /* Light theme readability overrides for ledger table & badges */
 [data-theme="nordic-light"] .text-amber-300 { color: #92400e !important; }
 [data-theme="nordic-light"] .text-amber-400 { color: #b45309 !important; }
@@ -190,6 +194,7 @@ code, .font-mono {
 [data-theme="nordic-light"] .text-rose-300 { color: #be123c !important; }
 [data-theme="nordic-light"] .text-emerald-300 { color: #047857 !important; }
 [data-theme="nordic-light"] .text-blue-300 { color: #1d4ed8 !important; }
+[data-theme="nordic-light"] .text-purple-300 { color: #6b21a8 !important; }
 
 /* POS Product Cards - Always high contrast on dark kiosk cards across all themes */
 #pos-product-grid h4,
