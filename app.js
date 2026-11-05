@@ -551,8 +551,20 @@ class StoreLedgerApp {
       e.stopPropagation();
     }
     const profileDropdown = document.getElementById("profile-dropdown");
-    if (profileDropdown) {
-      profileDropdown.classList.toggle("hidden");
+    const chevron = document.getElementById("profile-chevron");
+    if (!profileDropdown) return;
+
+    // Close any other open dropdowns first
+    document.getElementById("brand-dropdown")?.classList.add("hidden");
+    document.getElementById("theme-dropdown")?.classList.add("hidden");
+
+    const willOpen = profileDropdown.classList.contains("hidden");
+    if (willOpen) {
+      profileDropdown.classList.remove("hidden");
+      if (chevron) chevron.classList.add("rotate-180");
+    } else {
+      profileDropdown.classList.add("hidden");
+      if (chevron) chevron.classList.remove("rotate-180");
     }
   }
 
@@ -578,26 +590,27 @@ class StoreLedgerApp {
       });
     }
 
-    // Profile menu toggle
-    const profileBtn = document.getElementById("profile-menu-btn");
+    // Stop propagation on clicks inside the profile dropdown so interactions don't close it prematurely
     const profileDropdown = document.getElementById("profile-dropdown");
-    if (profileBtn && profileDropdown) {
-      profileBtn.addEventListener("click", (e) => {
+    if (profileDropdown) {
+      profileDropdown.addEventListener("click", (e) => {
         e.stopPropagation();
-        profileDropdown.classList.toggle("hidden");
       });
     }
 
     // Close on click outside
     document.addEventListener("click", (e) => {
+      const profileBtn = document.getElementById("profile-menu-btn");
+      const chevron = document.getElementById("profile-chevron");
+      if (profileDropdown && profileBtn && !profileDropdown.contains(e.target) && !profileBtn.contains(e.target)) {
+        profileDropdown.classList.add("hidden");
+        if (chevron) chevron.classList.remove("rotate-180");
+      }
       if (brandDropdown && brandBtn && !brandDropdown.contains(e.target) && !brandBtn.contains(e.target)) {
         brandDropdown.classList.add("hidden");
       }
       if (themeDropdown && themeBtn && !themeDropdown.contains(e.target) && !themeBtn.contains(e.target)) {
         themeDropdown.classList.add("hidden");
-      }
-      if (profileDropdown && profileBtn && !profileDropdown.contains(e.target) && !profileBtn.contains(e.target)) {
-        profileDropdown.classList.add("hidden");
       }
     });
   }
@@ -1303,7 +1316,8 @@ class StoreLedgerApp {
     }
     if (dropStoreBrand) {
       const activeB = this.getActiveBrand();
-      dropStoreBrand.textContent = activeB?.name || "Cranky Panda";
+      const bName = activeB?.name || "Cranky Panda";
+      dropStoreBrand.textContent = isAdmin ? `${bName} (Admin Console)` : `${bName} (Store #4)`;
     }
     if (dropSellerName) dropSellerName.textContent = u.name;
     if (dropThemeText) {
